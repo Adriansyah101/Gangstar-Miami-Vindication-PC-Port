@@ -1,0 +1,30 @@
+# A device SDL has no mapping for, passed through as it is: the D-pad as a hat works the menu, into the city, the stick walks
+dev
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini SHORT_WARNING=1
+ini NO_INTRO=1
+ini PAD_MENU=1
+ini PAD_TEST=raw
+save Gangstar2.sav
+wait 8
+padfor 300 A
+wait 14
+shot menu
+padfor 2000 UP LEFT                # the hat, at full speed
+padfor 148 RIGHT                   # 900 view units a second: to CONTINUE at 133, 300
+padfor 280 DOWN                    # a step takes about 60 ms more than it says
+wait 1
+shot pointer
+padfor 150 A
+wait 35
+shot start
+leftmenu menu start
+pad ly=-32767
+wait 3
+pad
+shot walked
+moved start walked
+expectlog ^\[joy\] 1 controller\(s\): 0="PAD_TEST" \(f00d:0001, joystick, 4 axes, 12 buttons, hat\)
+expectlog ^\[joy\] test: buttons=0x0 hat=9

@@ -1,0 +1,39 @@
+# Full screen and back with Alt+Enter, in the menu and in the city; the window follows and the pointer and camera still work
+dev
+ini FULLSCREEN=1
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini SHORT_WARNING=1
+ini NO_INTRO=1
+save Gangstar2.sav
+wait 8
+key SPACE
+wait 12
+shot fs-menu
+hold ALT
+key ENTER
+release ALT
+wait 3
+shot win-menu
+expectlog ^\[gl\] window: client 1280x720
+click 0.13 0.39
+wait 35
+shot city
+look 400 0
+wait 1
+shot turned
+moved city turned
+hold ALT
+key ENTER
+release ALT
+wait 3
+shot fs-city
+expectlog ^\[gl\] window: full screen
+look -400 0
+wait 1
+shot fs-turned
+moved fs-city fs-turned
+key ESC
+wait 3
+shot paused
+leftmenu fs-menu city

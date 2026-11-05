@@ -1,0 +1,10 @@
+# Checks the checker: every expectation here is wrong, so this one must say FAIL (run it by name, not part of a normal pass)
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=800
+ini SCREEN_HEIGHT=450
+wait 3
+expectlog this line is never written
+nolog \[config\]
+expectfile no-such-file
+nofile savegame\GangstarMV.ini
+waitlog neither-is-this 2

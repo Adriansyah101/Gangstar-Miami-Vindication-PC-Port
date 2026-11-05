@@ -1,0 +1,12 @@
+# TEST_FATAL=2: a missing import; error box, crash dump, exit code 3
+dev
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=800
+ini SCREEN_HEIGHT=450
+ini TEST_FATAL=2
+allow .
+expectbox GangstarMV\.dmp 90
+expectexit 3
+expectfile cache\GangstarMV.dmp
+expectlog ^\[crash\] wrote
+dumpclean

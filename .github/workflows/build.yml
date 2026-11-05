@@ -1,0 +1,73 @@
+# Compiles the host on every push and pull request, on Windows and on Linux, with no game files, through CMake
+# (host/CMakeLists.txt).  Nothing is run, and no program is kept.
+# The release and dev builds compile different code (GMV_DEV).  A warning fails the check, as the source has none.
+# The template links core/ and shims/ with no Gangstar source, which keeps them free of it.
+name: build
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW32
+          release: false      # the runner's own C:\msys64, the folder the build looks in
+          update: true
+          install: mingw-w64-i686-gcc mingw-w64-i686-cmake mingw-w64-i686-ninja
+      - name: Get SDL3
+        shell: pwsh
+        run: .\tools\get_sdl3.ps1
+      - name: Build
+        shell: pwsh
+        run: |
+          $env:PATH = "C:\msys64\mingw32\bin;$env:PATH"
+          $bad = 0
+          foreach ($v in 'gangstar release', 'gangstar dev', 'template release', 'template dev') {
+            $game, $kind = $v -split ' '
+            Write-Host "--- $game $kind"
+            $bin = "build/ci/$game-$kind"
+            $out = & {
+              cmake -S host -B $bin -G Ninja -DCMAKE_C_COMPILER=gcc "-DGMV_GAME=$game" "-DGMV_BUILD=$kind" -DGMV_NOICON=ON
+              if (-not $LASTEXITCODE) { cmake --build $bin }
+            } 2>&1 | ForEach-Object { "$_" }
+            $code = $LASTEXITCODE
+            $out
+            $warn = @($out | Where-Object { $_ -match '\bwarning:' })
+            $warn | ForEach-Object { Write-Host "::warning::$_" }
+            if ($code -or $warn.Count) { $bad = 1 }
+          }
+          exit $bad
+
+  linux:
+    runs-on: ubuntu-latest
+    # Debian trixie has the 32-bit SDL3 development files (libsdl3-dev:i386); Ubuntu's runner image does not.
+    container: debian:trixie
+    steps:
+      - name: Tools and 32-bit libraries
+        run: |
+          dpkg --add-architecture i386
+          apt-get update
+          apt-get install -y --no-install-recommends gcc-multilib cmake ninja-build \
+            libsdl3-dev:i386 libgl-dev:i386 libfreetype-dev:i386
+      - uses: actions/checkout@v4
+      - name: Build
+        shell: bash
+        run: |
+          set +e
+          bad=0
+          for v in "gangstar release" "gangstar dev" "template release" "template dev" "gangstar stage1"; do
+            set -- $v; game=$1; kind=$2
+            echo "--- $game $kind"
+            bin=build/ci/linux-$game-$kind
+            if [ "$kind" = stage1 ]; then opts="-DGMV_STAGE1=ON"; else opts="-DGMV_BUILD=$kind -DGMV_NOICON=ON"; fi
+            log=$(mktemp)
+            { cmake -S host -B "$bin" -G Ninja -DGMV_GAME="$game" $opts && cmake --build "$bin"; } > "$log" 2>&1
+            code=$?
+            cat "$log"
+            if grep -q 'warning:' "$log"; then grep 'warning:' "$log" | sed 's/^/::warning::/'; bad=1; fi
+            [ $code -ne 0 ] && bad=1
+          done
+          exit $bad

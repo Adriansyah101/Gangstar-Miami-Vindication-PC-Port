@@ -1,0 +1,21 @@
+# CUSTOM_RADIO's decoders, while the game loads (dev: the "now playing" lines).  build\playtest\songs holds short files
+# (about 0.05 s each, so the 3 s ring takes all of them before it is full): an mp3 with a non-ASCII name, an ogg, a
+# flac, a wav, an m4a (Media Foundation) and a broken.mp3 that is not one (the host's decoder fails, then MF).
+# The station is not tuned in, so nothing is heard: the decoder thread fills the ring as soon as the sound runs.
+dev
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini SHORT_WARNING=1
+ini NO_INTRO=1
+ini CUSTOM_RADIO=1
+songs
+waitlog custom station: 6 songs 30
+waitlog now playing .*\(dr_mp3, 30
+waitlog now playing .*\(stb_vorbis, 30
+waitlog now playing .*\(dr_flac, 30
+waitlog now playing .*\(dr_wav, 30
+waitlog now playing ".*\.m4a" \(\d+ Hz 30
+waitlog will not play "broken\.mp3"; trying Media Foundation 30
+wait 3
+shot menu

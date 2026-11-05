@@ -1,0 +1,12 @@
+# TEST_FATAL=3: an illegal instruction; error box, crash dump, exit code 9
+dev
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=800
+ini SCREEN_HEIGHT=450
+ini TEST_FATAL=3
+allow .
+expectbox GangstarMV\.dmp 90
+expectexit 9
+expectfile cache\GangstarMV.dmp
+expectlog ^\[crash\] wrote
+dumpclean

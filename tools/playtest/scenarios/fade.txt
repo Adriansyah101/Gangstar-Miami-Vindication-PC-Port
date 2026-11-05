@@ -1,0 +1,20 @@
+# CONTINUE's black fade covers the whole window, its top row and left column too, with the Mac's 4x anti-aliasing
+# (FADE_EDGE_FIX: without it a line of picture shows along those two edges)
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini SHORT_WARNING=1
+ini NO_INTRO=1
+ini MSAA=4
+save Gangstar2.sav
+wait 8
+key SPACE
+wait 12
+click 0.13 0.39
+wait 1.5
+shot black1 full
+wait 0.5
+shot black2 full
+edge black1
+edge black2
+expectlog ^\[gamepatch\] full-screen fades cover the top row and left column too

@@ -1,0 +1,11 @@
+# LOG=0 with a crash: the box asks for LOG=1, and no log or dump is left
+dev
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=800
+ini SCREEN_HEIGHT=450
+ini LOG=0
+ini TEST_FATAL=1
+expectbox set LOG=1 90
+expectexit 6
+nofile cache\GangstarMV.dmp
+nofile cache\GangstarMV.log

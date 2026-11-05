@@ -1,0 +1,37 @@
+# Every gameplay, control and menu option on, with the add-ons, into the city: each one's hooks go in and the game runs on.
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini SHORT_WARNING=1
+ini NO_INTRO=1
+ini ALLOW_WEAPON_SPRINT=1
+ini MINIMAP_SHOPS=1
+ini MISSION_REPLAY=1
+ini PLAYERSWITCH_INVENTORY=1
+ini LC_SWITCH=1
+ini CUSTOM_RADIO=1
+ini UC_CRUSHER=1
+ini RADIO_SONGS=1
+ini KEY_MOVE=1
+ini PAD_LAYOUT=1
+ini PAD_MENU=1
+ini PAD_HINTS=1
+ini PAD_ICONS=1
+ini CUTSCENE_KEYS=1
+ini TUTORIAL_KEYS=1
+ini HIDE_MORE_GAMES=1
+ini HIDE_GAMELOFT_LIVE=1
+save Gangstar2.sav
+addon
+wait 8
+key SPACE
+wait 12
+shot menu
+click 0.13 0.39
+wait 45
+shot start
+holdscan 11
+wait 3
+releasescan 11
+shot walked
+moved start walked

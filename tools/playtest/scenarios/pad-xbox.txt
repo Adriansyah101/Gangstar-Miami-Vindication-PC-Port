@@ -1,0 +1,71 @@
+# An Xbox pad and nothing else: skip the intro and the warning, work the menu, into the city, walk, camera, pause; then keyboard and pad in turn, unplug
+dev
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini SHORT_WARNING=1
+ini PAD_MENU=1
+ini PAD_TEST=xbox
+save Gangstar2.sav
+waitlog \[intro\] playing
+wait 2
+padfor 300 A                       # the intro
+wait 6
+padfor 300 A                       # the warning
+wait 14
+shot menu
+padfor 2600 lx=-32767 ly=-32767    # the pointer to the top left corner
+padfor 621 lx=20000                # 214 view units a second with Xbox's dead zone: to CONTINUE at 133, 300
+padfor 1402 ly=20000
+wait 1
+shot pointer
+padfor 150 A
+wait 35
+shot start
+leftmenu menu start
+pad ly=-32767                      # the left stick forward
+wait 3
+pad
+shot walked
+moved start walked
+pad rx=32767                       # the right stick turns the camera
+wait 2
+pad
+shot turned
+moved walked turned
+padfor 150 START                   # the pause menu, and B out of it: on the Mac too menus only answer to Esc and the pointer
+wait 2
+shot paused
+leftmenu turned paused
+padfor 150 B
+wait 3
+holdscan 11                        # the keyboard takes over, which makes the game rescan
+wait 2
+releasescan 11
+shot keyboard
+pad ly=-32767                      # and the pad again, after the rescan
+wait 2
+pad
+shot pad-again
+moved keyboard pad-again
+pad ly=-32767                      # unplugged while pushed: stops, the game goes on
+wait 1
+pad unplug
+wait 3
+shot unplugged
+wait 1
+shot unplugged2
+still unplugged unplugged2 8
+holdscan 11
+wait 2
+releasescan 11
+shot keyboard-after
+moved unplugged2 keyboard-after
+expectlog ^\[joy\] 1 controller\(s\): 0="PAD_TEST" \(045e:028e, gamepad, 4 axes, 12 buttons, hat\)
+expectlog ^\[joy\] test: buttons=0x2 hat=0
+expectlog ^\[padmenu\] pointer on
+expectlog ^\[intro\] skipped by a pad button
+expectlog ^\[joy\] test: buttons=0x200 hat=0
+expectlog ^\[joy\] test: buttons=0x0 hat=0 axes=0,-32767,0,0
+expectlog ^\[joy\] test: buttons=0x0 hat=0 axes=0,0,32767,0
+expectlog ^\[joy\] test: virtual pad unplugged

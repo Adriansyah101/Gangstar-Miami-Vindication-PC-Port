@@ -1,0 +1,39 @@
+# ORIGINAL_MAC_EXPERIENCE=1 from the start, with the add-on there, into the city: the [macaudit] lists of every game
+# byte still not the shipped one (once the hooks are out, and again 120 s later), and no enhancement at work in the log
+dev
+addon
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini ORIGINAL_MAC_EXPERIENCE=1
+save Gangstar2.sav
+wait 45
+key SPACE
+wait 20
+click 0.13 0.39
+wait 40
+shot city
+holdscan 11
+wait 3
+releasescan 11
+look 400 0
+wait 2
+shot turned
+moved city turned
+waitlog ^\[macaudit\] \d+ places 120
+wait 125                 # the second list
+expectlog ^\[config\] ORIGINAL_MAC_EXPERIENCE=1
+expectlog ^\[macaudit\] groups left in: enhancements 0, draw distance 0, collision tables 0, crowd 0, Crusher 0
+nolog ^\[macaudit\] still in after
+nolog ^\[sunmoon\]
+nolog collision sized
+nolog population density
+nolog ^\[ao\] AMBIENT_OCCLUSION=1
+nolog ^\[bloom\] BLOOM=[12]
+nolog ^\[ssr\] WATER_REFLECTIONS=1
+nolog ^\[vr\] VEHICLE_REFLECTIONS=1
+nolog ^\[shadow\] DYNAMIC_SHADOWS=1
+nolog ^\[fog\] FOG_MODE=[12]
+nolog ^\[gamepatch\] full-screen fades cover the top row
+nolog ^\[gamepatch\] main menu takes clicks during its background fades
+expectlog ^\[gamepatch\] streaming wait takes 200 items a tick

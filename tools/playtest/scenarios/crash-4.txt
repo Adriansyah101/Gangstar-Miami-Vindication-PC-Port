@@ -1,0 +1,12 @@
+# TEST_FATAL=4: a crash on another thread; error box, crash dump, exit code 6
+dev
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=800
+ini SCREEN_HEIGHT=450
+ini TEST_FATAL=4
+allow .
+expectbox GangstarMV\.dmp 90
+expectexit 6
+expectfile cache\GangstarMV.dmp
+expectlog ^\[crash\] wrote
+dumpclean

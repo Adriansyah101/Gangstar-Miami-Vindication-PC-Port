@@ -1,0 +1,15 @@
+# Full screen at 1024x768 on a 16:9 monitor: black bars left and right, and a click must still land on CONTINUE (needs a 1920x1080 display: x 0.2225 is 0.13 of the picture)
+ini FULLSCREEN=1
+ini SCREEN_WIDTH=1024
+ini SCREEN_HEIGHT=768
+ini SHORT_WARNING=1
+ini NO_INTRO=1
+save Gangstar2.sav
+wait 8
+key SPACE
+wait 12
+shot menu
+click 0.2225 0.39
+wait 35
+shot city
+leftmenu menu city

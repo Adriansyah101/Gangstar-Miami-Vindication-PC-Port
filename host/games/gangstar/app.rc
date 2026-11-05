@@ -1,0 +1,6 @@
+/* Application icon for GangstarMV.exe.  ID 1 = the icon Explorer/taskbar shows.
+   app.ico is generated from "App icon.png" (the project's 512x512 icon art):
+     magick "..\App icon.png" -define icon:auto-resize=256,128,64,48,32,16 app.ico
+   build.ps1 compiles this with windres and links the .rsrc into the exe. */
+1 ICON "app.ico"
+/* On Linux, linux/build.sh builds the same app.ico into the program (gl_context.c reads it for the window). */

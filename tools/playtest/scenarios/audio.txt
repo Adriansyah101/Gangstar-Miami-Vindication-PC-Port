@@ -1,0 +1,16 @@
+# Sound: the intro movie's stream, then the game's in the menu and the city.  Whether it reaches the speakers takes a meter or an ear.
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini SHORT_WARNING=1
+ini NO_INTRO=0
+save Gangstar2.sav
+wait 25
+key SPACE
+wait 15
+shot menu
+click 0.13 0.39
+wait 35
+shot city
+expectlog \[audio\] stream open
+nolog no audio stream|no sound|playing silent

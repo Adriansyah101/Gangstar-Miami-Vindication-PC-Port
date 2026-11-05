@@ -1,0 +1,12 @@
+# Alt+F4 closes the game at once, with no box
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=800
+ini SCREEN_HEIGHT=450
+ini SHORT_WARNING=1
+ini NO_INTRO=1
+wait 8
+hold ALT
+key F4
+release ALT
+expectexit 0 15
+expectlog window closed

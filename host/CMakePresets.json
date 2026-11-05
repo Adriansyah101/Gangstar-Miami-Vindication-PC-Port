@@ -1,0 +1,71 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/../build/cmake/${presetName}"
+    },
+    {
+      "name": "windows-base",
+      "hidden": true,
+      "inherits": "base",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" },
+      "environment": { "PATH": "C:/msys64/mingw32/bin;$penv{PATH}" },
+      "cacheVariables": { "CMAKE_C_COMPILER": "gcc" }
+    },
+    {
+      "name": "windows",
+      "displayName": "Windows, plain (like build.ps1)",
+      "inherits": "windows-base",
+      "cacheVariables": { "GMV_BUILD": "plain" }
+    },
+    {
+      "name": "windows-dev",
+      "displayName": "Windows, dev (like build.ps1 -Dev)",
+      "inherits": "windows-base",
+      "cacheVariables": { "GMV_BUILD": "dev" }
+    },
+    {
+      "name": "windows-release",
+      "displayName": "Windows, release (like build.ps1 -Release)",
+      "inherits": "windows-base",
+      "cacheVariables": { "GMV_BUILD": "release" }
+    },
+    {
+      "name": "linux-base",
+      "hidden": true,
+      "inherits": "base",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux" },
+      "toolchainFile": "${sourceDir}/cmake/linux-i386.cmake"
+    },
+    {
+      "name": "linux",
+      "displayName": "Linux, plain (like linux/build.sh)",
+      "inherits": "linux-base",
+      "cacheVariables": { "GMV_BUILD": "plain" }
+    },
+    {
+      "name": "linux-dev",
+      "displayName": "Linux, dev",
+      "inherits": "linux-base",
+      "cacheVariables": { "GMV_BUILD": "dev" }
+    },
+    {
+      "name": "linux-release",
+      "displayName": "Linux, release",
+      "inherits": "linux-base",
+      "cacheVariables": { "GMV_BUILD": "release" }
+    }
+  ],
+  "buildPresets": [
+    { "name": "windows", "configurePreset": "windows" },
+    { "name": "windows-dev", "configurePreset": "windows-dev" },
+    { "name": "windows-release", "configurePreset": "windows-release" },
+    { "name": "linux", "configurePreset": "linux" },
+    { "name": "linux-dev", "configurePreset": "linux-dev" },
+    { "name": "linux-release", "configurePreset": "linux-release" }
+  ]
+}

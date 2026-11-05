@@ -1,0 +1,87 @@
+# Every enhancement on at the start, ORIGINAL_MAC_EXPERIENCE switched on in the main menu's GAMEPATCH tab, then into
+# the city: the [macaudit] lists must hold only what the preset keeps (the same as mac-audit's)
+dev
+addon
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini SHORT_WARNING=1
+ini NO_INTRO=1
+ini FAST_LOAD=1
+ini FRAME_MS=8.3333
+ini PHYSICS_SYNC=1
+ini CAMERA_SYNC=1
+ini WALK_SYNC=1
+ini AI_SYNC=1
+ini LOAD_BUDGET=200
+ini LOAD_SLEEP_SKIP=1
+ini ANISOTROPIC_FILTERING=16
+ini AMBIENT_OCCLUSION=1
+ini BLOOM=2
+ini WATER_REFLECTIONS=1
+ini VEHICLE_REFLECTIONS=1
+ini DYNAMIC_SHADOWS=1
+ini SUN_MOON=1
+ini SPAWN_FADE=1
+ini DRAW_DISTANCE=2
+ini FOG_MODE=2
+ini TRAFFIC_DENSITY=3
+ini PEDESTRIAN_DENSITY=3
+ini PARKED_CAR_DENSITY=3
+ini ALLOW_WEAPON_SPRINT=1
+ini MINIMAP_SHOPS=1
+ini MISSION_REPLAY=1
+ini UC_CRUSHER=1
+ini SWITCH_SAVE_FIX=1
+ini PLAYERSWITCH_INVENTORY=1
+ini LC_SWITCH=1
+ini CUSTOM_RADIO=1
+ini RADIO_SONGS=1
+ini RADIO_LOGO_FIX=1
+ini PAD_ICONS=1
+ini PAD_LAYOUT=1
+ini PAD_MENU=1
+ini PAD_HINTS=1
+ini KEY_MOVE=1
+ini CUTSCENE_KEYS=1
+ini TUTORIAL_KEYS=1
+ini HIDE_MORE_GAMES=1
+ini HIDE_GAMELOFT_LIVE=1
+save Gangstar2.sav
+wait 8
+key SPACE
+wait 12
+click 0.12 0.625
+wait 3
+click 0.12 0.70
+wait 3
+shot tab-before
+click 0.903 0.406         # ORIGINAL MAC EXPERIENCE: OFF -> ON
+wait 2
+click 0.734 0.902         # APPLY
+wait 2
+shot tab-switched
+waitlog ^\[gamepatch\] ORIGINAL_MAC_EXPERIENCE on 10
+click 0.06 0.957          # BACK (the Mac's menus take no Esc)
+wait 3
+shot menu
+click 0.13 0.39
+wait 45
+shot city
+holdscan 11
+wait 3
+releasescan 11
+look 400 0
+wait 2
+shot turned
+moved city turned
+waitlog ^\[macaudit\] \d+ places 120
+wait 125                 # the second list
+expectlog ^\[gamepatch\] the other enhancements' hooks out too
+expectlog ^\[gamepatch\] density and SPAWN_FADE hooks out
+expectlog ^\[gamepatch\] draw distance hooks out
+expectlog ^\[gamepatch\] collision tables the Mac's again
+expectlog ^\[crusher\] its hooks out
+expectlog ^\[macaudit\] groups left in: enhancements 0, draw distance 0, collision tables 0, crowd 0, Crusher 0
+# ("[macaudit] still in after 60 s" can show while the menu and the city's loading last: the draw distance and the
+#  Crusher go only once no menu is up)

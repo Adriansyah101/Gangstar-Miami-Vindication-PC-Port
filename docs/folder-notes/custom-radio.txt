@@ -1,0 +1,17 @@
+This folder is for your own music. Its songs play on a sixth radio station in the car.
+
+To use it:
+  1. Put your songs in this folder: mp3, ogg, flac, wav, m4a, aac or wma.
+     Songs in subfolders are not played. On Linux, m4a, aac and wma need ffmpeg installed.
+  2. The station is on by default. Custom Radio on the game's SOUND page, or CUSTOM_RADIO=0 in
+     savegame\GangstarMV.ini, turns it off.
+  3. In a car, switch to it like any other station.
+
+The songs play in a shuffled order and follow the game's MUSIC volume. Custom Radio Volume on the
+SOUND page sets how loud they are compared with that.
+
+New songs are found when the station is turned on, and each time every song has played.
+
+A release build's log does not name your songs, and the port sends nothing anywhere.
+
+This note does nothing in the game. You can delete it.

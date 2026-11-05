@@ -1,0 +1,13 @@
+# QUIT in the main menu, YES: the game ends cleanly, exit code 0
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini SHORT_WARNING=1
+ini NO_INTRO=1
+wait 8
+key SPACE
+wait 12
+click 0.11 0.86
+wait 2
+click 0.415 0.557
+expectexit 0 20

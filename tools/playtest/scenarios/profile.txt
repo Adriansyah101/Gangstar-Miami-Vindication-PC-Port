@@ -1,0 +1,19 @@
+# The diagnostics LOAD_PROFILE and PERF_PROFILE (dev build): to the main menu, and both write their lines,
+# the sampler's included
+dev
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini SHORT_WARNING=1
+ini LOAD_PROFILE=1
+ini PERF_PROFILE=1
+wait 8
+key SPACE
+wait 20
+shot menu
+expectlog ^\[loadprof\] on
+expectlog ^\[loadprof\] f\d+ tick
+expectlog ^\[loadprof\]   \d+ samples
+expectlog ^\[perf\] [\d.]+ s:
+expectlog ^\[perf\]   \d+ samples in ticks
+expectlog ^\[perf\]   incl

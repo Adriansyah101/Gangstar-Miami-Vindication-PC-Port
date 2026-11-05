@@ -1,0 +1,16 @@
+# The frame rate with no pacer, in the city, for comparing two builds: run it with -Exe on each and read [framepace] in the logs
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini SHORT_WARNING=1
+ini NO_INTRO=1
+ini FRAME_MS=0
+ini SWAP_INTERVAL=0
+save Gangstar2.sav
+wait 8
+key SPACE
+wait 12
+click 0.13 0.39
+wait 45
+shot city
+expectlog ^\[framepace\] \d+ frames

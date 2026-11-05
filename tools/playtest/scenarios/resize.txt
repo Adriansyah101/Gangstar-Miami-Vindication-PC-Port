@@ -1,0 +1,57 @@
+# The player sizes the window, in the menu and in the city: the picture must fill it with its shape kept,
+# a click must land on what it shows, and the screen FBO must stay the size the game asked for
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini SHORT_WARNING=1
+ini NO_INTRO=1
+save Gangstar2.sav
+wait 8
+key SPACE
+wait 12
+shot before
+# The cursor stays inside the picture, so it needs the room for the drag
+move 0.9 0.9
+wait 1
+drag -320 -180
+wait 3
+shot smaller
+size 960 540
+# The mouse still down: the picture has to be in the window already.  Read this shot: the menu goes black by
+# itself between scenes, so only the one in the city is compared
+move 0.1 0.1
+wait 1
+drag 320 90 wider-held
+wait 3
+shot wider
+size 1280 630 5
+click 0.13 0.39
+wait 35
+shot city
+leftmenu before city
+look 400 0
+wait 1
+shot turned
+moved city turned
+maximize
+wait 3
+shot maximized
+restore
+wait 3
+size 1280 630 5
+drag -160 -90 city-held
+wait 3
+shot city-after
+still city-held city-after 25
+hold ALT
+key ENTER
+release ALT
+wait 3
+shot full
+hold ALT
+key ENTER
+release ALT
+wait 3
+shot back
+size 1280 720
+nolog screen resized

@@ -1,0 +1,432 @@
+GangstarMV PC Port V1.0.0 - what has been fixed and added (as of 2026-11-05)
+================================================================
+
+Every item below is a key in GangstarMV.ini. The fixes are on by default, and setting one to 0
+brings back the old behaviour. The iPhone features and PC enhancements are on by default in a new
+GangstarMV.ini (60 fps, draw distance 2, crowds at 3, every effect); 0 (or the Mac's value) turns
+one off, and ORIGINAL_MAC_EXPERIENCE=1 turns them all off. A key left blank or missing from the
+file means off, as on the Mac. In the source, docs\NOTES.md has the full write-up:
+its fix log has the items cited below, and its settings section covers the graphics enhancements.
+
+
+THE GAMEPATCH TAB
+-----------------
+
+GAMEPATCH_TAB  On by default. A GAMEPATCH tab in the game's options menu, below VIDEO, changes most
+               of these settings from inside the game. A change is saved at once and most take
+               effect at once. GAMEPATCH_TAB=0 removes it. With ORIGINAL_MAC_EXPERIENCE=1 the tab
+               holds only that switch.
+
+
+PORT BUGS (caused by running the Mac game on Windows)
+-----------------------------------------------------
+
+TEXFIX        Death -> hospital fade and the map-menu fade never turned the screen black.
+              The game draws its fade rectangles with a texture still switched on and no texture
+              coordinates. The Mac's graphics driver gave an opaque result; the Windows driver
+              gives a transparent one, so the black was invisible. The host now draws such shapes
+              in plain colour. (notes item 8)
+
+SWAP_COPY     Cutscene fade-to-black did not show properly. The Mac keeps the last drawn frame
+              after each present and the game's fades rely on that. Windows gave a buffer holding
+              the frame before last. The host now asks for a copy-swap buffer like the Mac's.
+              (notes item 7)
+
+NO_FLICKER    Black flicker on the menus. The game draws every other tick; without the Mac's
+              kept buffer, empty frames alternated with drawn ones. The host only presents frames
+              the game actually drew. Fallback for when copy-swap is unavailable.
+
+VTXFIX        Crash within a few steps of moving the player. The game's vertex converter lacks a
+              safety check on one path (it has it on the other). The data that reaches that path
+              in this port never does on the Mac. The host adds the game's own check there.
+              (notes item 1)
+
+CRASH58_GUARD Crash about 13 minutes into play (null read at 0x58c1ab). A streamed object's
+              helper pointer is sometimes empty; the guard turns the certain crash into a logged
+              no-op. Most likely port-side, but the root cause was not proven.
+
+STOPLOCK_FIX  Car's gas and brake could die for good after a full stop. The game's 200 ms
+              "settle" lock is timed with the frame length instead of a clock, so it only
+              releases when a shorter frame comes along. Mac vsync jitter always supplied one;
+              the port's steady frame timing could not. The lock now uses the real clock.
+              (notes item 5)
+
+FAST_FTELL    Loading a scene froze the game for about 2 seconds. The game asks for the file
+              position before every read, about 580,000 times per load. On the Mac that cost
+              nothing; on Windows each one is a trip into the kernel. The host now keeps the
+              position itself and answers without asking Windows. The same pass opens asset files
+              in one try instead of two. Worst freeze on the way to the menu: 1765 ms -> 258 ms.
+              (notes item 12)
+
+FAST_FSEEK    Long hitches during the start-up load. Windows' fseek throws away its read buffer
+              and asks the kernel on every seek, even inside bytes it already has; the Mac's C
+              library just moves its pointer. Files opened for reading now get a 64 KB buffer and
+              seeks inside it are served directly, as on the Mac. Same bytes, about 20-50x faster
+              per seek. Needs FAST_FTELL. (notes item 12)
+
+FAST_MEMMOVE  Physics stutters while driving. The collision system shifts its sorted arrays with
+              overlapping backward memory moves, which Windows' C library does slowly. They are
+              now copied with SSE2, as the Mac's library does: 3.5-8x faster. (notes item 12)
+
+STATIC_VBO    The game sends every model (the city, the cars) from main memory to the graphics
+              card again on every draw, which costs Windows' OpenGL drivers far more than the
+              Mac's. Models that stay unchanged for a few frames are now kept in the graphics
+              card's memory; one the game changes goes back to the old way first. Time spent
+              inside the draws: 185 -> 77 ms a second (about 10% of each frame back). Nothing
+              on screen changes.
+
+MSAA          The Mac game ran with 4x anti-aliasing (it asks for it on every Mac but eight early
+              Intel models); the port's window had none, so edges were jagged. MSAA=4 (the
+              default) restores it; 0 turns it off, 2 or 8 pick another count.
+
+Frame pacing  The game ran at the monitor's refresh rate (~150 ticks/s on a fast laptop panel)
+(FRAME_MS)    instead of the Mac's 60, which broke engine sound, box-climbing and more. It now
+              ticks at a steady 60/s by default, like a 60 Hz Mac. Same pass: a 1 ms timer for the
+              game's sleeps.
+              (notes item 4)
+
+Error box     When the game or the port cannot go on, a message box now says why and points to the
+(always on)    log before the game closes. Before, the game just vanished. This includes a window or
+              OpenGL that cannot be started, as can happen with an old graphics driver. Problems
+              the port survives do not show it.
+
+Crash dump    After a crash the port also leaves cache\GangstarMV.dmp, which shows what its threads
+(with LOG=1)  were doing, so a crash the log cannot explain can still be traced. See LOG=1 below.
+
+DPI_AWARE     With Windows display scaling above 100%, Windows stretched the port's window, which
+              blurred the picture. The port now draws at the screen's real pixels, so a window
+              keeps the size you chose in pixels and looks smaller than it did. DPI_AWARE=0 brings
+              the old stretch back, at the next start.
+
+AZERTY        On a French or Belgian keyboard the port now tells the game so, and the game moves the
+(always on)   player with its own Z Q S D, as the Mac did. It takes effect on a first start: the keys
+              are kept in savegame\Gangstar2.preferences, so after playing on another layout, delete
+              that file to get them (the game's other settings in it start over too).
+
+Also fixed while bringing the port up (not switchable, part of the port itself): the black window
+at start (viewport never set), saved resolution read as 0x0, every asset file failing to open,
+the resolution picker crash, string/stream ABI problems, and the intro logo never finishing.
+
+
+VANILLA BUGS (the Mac game does the same; changed at the user's request)
+------------------------------------------------------------------------
+
+The first five below are off with ORIGINAL_MAC_EXPERIENCE=1 (MENUFLASH_FIX to RADIO_LOGO_FIX, and
+SWITCH_SAVE_FIX). LOAD_SLEEP_SKIP, LOAD_BUDGET and FAST_LOAD stay on with it: same result, sooner.
+
+MENUFLASH_FIX     Two frames of raw 3D background (a building wall, no menu) flash between the
+                  title and the main menu. The title now stays up until the menu's fade from black
+                  begins. (notes item 9)
+
+FADE_EDGE_FIX     With anti-aliasing on (the Mac's 4x), the black fades, such as the one after
+                  CONTINUE, left the screen's top row and left column showing the picture. The
+                  game draws them 0.375 of a pixel inside the corner; the host now starts them
+                  past it. (notes item 33)
+
+MENU_FADE_CLICKS  Main-menu clicks were ignored for a second or so at a time, mostly while the
+                  background scene loaded. The game's cutscene fader wipes all input on every tick
+                  of a fade. During main-menu fades the host now keeps the input. Only the main
+                  menu is affected; cutscenes and missions keep the original lock. (notes item 10)
+
+RADIO_LOGO_FIX    After getting into a car the HUD radio logo showed the station that played last
+                  (104FM on the first car of a session) while the car's own station played. The
+                  game updates the logo as you start getting in, but the car starts its radio only
+                  once you are seated. The logo now shows the car's station from the moment you
+                  start getting in. (notes item 11)
+
+LOAD_SLEEP_SKIP   For 2-4 s after the menu appears, a respawn or a zone change, the game sleeps
+                  16 ms every tick while it waits for streamed objects, capping those seconds at
+                  about 60 fps. Harmless on a 60 Hz Mac; the sleep is now skipped so they run at
+                  full frame rate. (notes item 12)
+
+LOAD_BUDGET       The main menu's frame and buttons came in over the black in jerks, frames of up
+                  to about 114 ms, while the game built the city's collision in big steps. It now
+                  takes 200 items a tick from that queue, not 1500, so the same work is spread over
+                  more frames: the longest frame after the first quarter second is about 32 ms. A
+                  few heavy frames stay at the very start. Waits for streaming can last a little
+                  longer on a slow machine. Also on the GAMEPATCH tab (FIXES: SMOOTH CITY LOADING).
+                  (notes item 29)
+
+FAST_LOAD         The "Loading" screen after the start-up warning did one of its steps every 33 ms,
+                  and one step walks a list one item at a time, so the screen sat at 20 % for about
+                  a second with nothing to do. It now takes as many steps a frame as fit in 10 ms;
+                  what it loads is the same. From the warning to the title: 2.1 s before, 0.7 s now.
+                  Also on the GAMEPATCH tab (MENU: FAST START-UP LOADING), from the next start.
+                  (notes item 31)
+
+SWITCH_SAVE_FIX   A save made in free roam while you play as Betty gave her cash, armour, outfit
+                  and weapons to Johnny when it was loaded. The save now keeps Johnny's; you still
+                  start where you saved. Also on the GAMEPATCH tab (FIXES: PLAYERSWITCH SAVE FIX).
+                  (notes item 23)
+
+Origin collision  When a level starts, the buildings within about 225 m of the map's centre have
+(no key)          no collision until you move away and come back (the city grid's starting
+                  position is the map's centre). The Mac game has this too. Fixed only when
+                  DRAW_DISTANCE is above 1, where the same fault would cover most of the city; at
+                  DRAW_DISTANCE=1 the game is left as on the Mac. (notes item 13)
+
+(The death fade was first reported as a vanilla bug, but the cause turned out to be the port's
+graphics driver difference - see TEXFIX above.)
+
+
+HIGH-FPS SUPPORT (matters most when FRAME_MS is not 16.667)
+-------------------------------------------------------------
+
+PHYSICS_SYNC  Step car/object physics once per tick, at the chosen tick rate, for smooth driving. On
+              by default, off with ORIGINAL_MAC_EXPERIENCE=1.
+CAMERA_SYNC   Keep the on-foot running camera sway as it looks at 60 ticks/s. On by default,
+              but does nothing at 60.
+WALK_SYNC     Stop the walking characters in the main menu's scenes and in cutscenes from flicking
+              their facing back and forth. On by default, but does nothing at 60.
+AI_SYNC       Stop running characters from being taken as stuck and restarting their run over and
+              over (the main menu's shotgun walker running back; chasing enemies too). On by
+              default, but does nothing at 60.
+
+
+iPHONE FEATURES BROUGHT BACK (on by default)
+--------------------------------------------
+
+SUN_MOON               A sun by day and a moon at night, with their glow. Most of the iPhone code and
+                       all four textures are still in the Mac game; two removed pieces are put back.
+                       The moon sets behind the distant skyline. In both modes the textures are the
+                       Mac's.
+                       2 (IPHONE): the glow is drawn as the iPhone version draws it, so it shines
+                       through buildings. Its texture is left as it is, so faint colour rings show
+                       in the gradient.
+                       1 (ENHANCED): the glow is hidden behind buildings with a soft edge and is
+                       1.6 times as bright, and its texture is smoothed so no rings show.
+
+ALLOW_WEAPON_SPRINT=1  Keep your weapon in hand while you sprint, as on the iPhone. The Mac puts
+                       it away and shows fists until you let go of Sprint. (notes item 16)
+
+
+PC ENHANCEMENTS (beyond both originals; on by default)
+------------------------------------------------------
+
+ANISOTROPIC_FILTERING  2, 4, 8 or 16: roads and walls stay sharp at a distance.
+
+AMBIENT_OCCLUSION=1    Soft contact shadows in corners and under cars, drawn under the HUD.
+                       AO_STRENGTH (default 1.2) and AO_RADIUS (default 60) tune it.
+
+BLOOM=1                A soft glow around the bright parts of the world: neon, street lights,
+                       headlights, the sun. BLOOM_INTENSITY (default 1.0) and BLOOM_THRESHOLD
+                       (default 0.75) tune it. BLOOM=2 also makes the game's light sprites and the
+                       lit windows on the buildings glow (BLOOM_LIGHTS, BLOOM_WINDOWS).
+
+WATER_REFLECTIONS=1    The sea reflects the city and the sky. Only what is on screen can be
+                       reflected, so the reflection fades to the sky's colour near the screen's
+                       edges. REFLECTION_STRENGTH (default 1.0, up to 2) tunes it. Also on the
+                       GAMEPATCH tab (WATER REFLECTIONS).
+
+VEHICLE_REFLECTIONS=1  The shiny cars reflect the street, the buildings and the other cars, again
+                       only what is on screen; elsewhere the game's own shine stays. Matte cars
+                       stay matte. VEHICLE_REFLECTION_STRENGTH (default 2.0) tunes it. Also on the
+                       GAMEPATCH tab (CAR REFLECTIONS).
+
+DYNAMIC_SHADOWS=1      Vehicles and people cast shadows that follow the sun and the moon, in place
+                       of the fixed one under each. When neither is up, around dusk and dawn, a soft
+                       shadow stays under the thing, so a shadow never just vanishes. Buildings do
+                       not cast, so a car under a bridge still gets a sun shadow, and moon shadows
+                       also show under street lights. Also on the GAMEPATCH tab (DYNAMIC SHADOWS).
+
+SPAWN_FADE=1           The cars and pedestrians that come and go around you fade in and out over
+                       about a second instead of popping. Also on the GAMEPATCH tab (FADE IN
+                       TRAFFIC).
+
+DRAW_DISTANCE          1-4: draws the city up to 4 times as far as the Mac's 450 m / 900 m.
+                       Traffic and pedestrians still come and go as on the Mac. The collision
+                       tables grow with it, so buildings keep their collision at any setting.
+
+TRAFFIC_DENSITY        0-4: how many cars drive around you, as a multiple of the Mac's (at most 18
+                       at once, fewer at night). New cars also turn up that much sooner.
+PEDESTRIAN_DENSITY     0-4: the same for pedestrians (at most 14 at once on the Mac).
+PARKED_CAR_DENSITY     0-4: the same for parked cars (at most 10 at once on the Mac).
+                       Default 1, as on the Mac. High values cost frame rate. Also on the
+                       GAMEPATCH tab (TRAFFIC, PEDESTRIANS, PARKED CARS).
+
+FOG_MODE               0 = the game's own fog, on only some materials, as on the Mac, from 450 m
+                           to 900 m at DRAW_DISTANCE=1, 50 m further for each 0.5 more (the Mac's
+                           450-1200 m with ORIGINAL_MAC_EXPERIENCE=1).
+                       1 = linear fog over the whole city in the sky's own colour, from 100 m to
+                           800 m at DRAW_DISTANCE=1, 50 m further for each 0.5 more (900 m at 2,
+                           1100 m at 4). It follows DRAW_DISTANCE when that changes in the menu.
+                       2 = the hybrid fog: like 1, but by the true distance from the eye at every
+                           pixel, so it does not shift as the camera turns, thickening along a
+                           smooth curve to complete at the fog's end, and thinner higher up.
+                       With 1 or 2 the distant skyline fades into the fog without a seam, stands
+                       on the fogged sea at any altitude, and the sea carries on past the map's
+                       edge instead of stopping in a straight line.
+
+FOG_HEIGHT             With FOG_MODE=2: how fast the fog thins with height, in metres (blank = 60;
+                       0 = as thick at every height).
+
+HIDE_MORE_GAMES=1      No "More Games!" corner on the main menu. It opened Gameloft's ads page,
+                       which is long gone. (notes item 14)
+
+HIDE_GAMELOFT_LIVE=1   No Gameloft LIVE! badge on the main menu. It opened Gameloft's online
+                       sign-in, which is long gone. (notes item 15)
+
+SHORT_WARNING=1        The "This game contains coarse language..." warning at start-up shows
+                       for 3 s instead of 15, and any key, click or gamepad button skips it.
+                       Also on the GAMEPATCH tab (MENU: SHORT START-UP WARNING), from the
+                       next start. (notes item 19)
+
+CUTSCENE_KEYS=1        Cutscenes as on a PC: no SKIP button, dialog arrows or mouse pointer on
+                       screen. Esc or Enter skips the cutscene, Space shows the next line of
+                       dialog. Also on the GAMEPATCH tab (MENU: HIDE CUTSCENE KEYS), at once.
+                       (notes item 20)
+
+TUTORIAL_KEYS=1        Esc, Enter or Space presses the OK of a tutorial popup ("Combat ... OK").
+                       In a question popup ("Repair? YES / NO") Enter or Space answers YES and
+                       Esc answers NO. Also on the GAMEPATCH tab (MENU: POPUP KEYS), at once.
+                       (notes item 21)
+
+PAD_LAYOUT=1           A gamepad layout like GTA V's (Xbox names; it assumes the standard
+                       pad layout, not the calibration page).
+                       On foot: A sprint, B reload, X shops/buildings, Y enter a vehicle,
+                       LB previous weapon, RB cover, hold LT to lock on, RT shoot,
+                       D-pad left/right previous/next weapon.
+                       In a car: RT gas, LT brake/reverse, RB handbrake, LB shoot, hold A to
+                       lock on (drive-by), Y get out,
+                       X/B previous/next weapon, R3 look back, D-pad left/right radio
+                       station, down radio on/off, up the CB's special mission; the left
+                       stick only steers.
+                       Flying: RT up, LT down, LB/RB turn, A shoot, Y get out.
+                       Sniper: RT shoot, RB/LB zoom in/out, B leave; the sticks aim
+                       finer for small pushes and slower as the view zooms in.
+                       Start pauses in all of them. On foot and in a car the right stick
+                       turns the camera 4x the Mac's speed. (Whatever this says, the sticks
+                       now turn the camera at the same speed at any frame rate; before, they
+                       turned 4x faster at 120 fps than on the Mac.) Also on the GAMEPATCH tab (FIXES: PAD
+                       LAYOUT, MAC / GTA-LIKE), at once. (notes item 22)
+
+PAD_MENU=1             The gamepad works the menus: while the game shows its yellow pointer, the
+                       left stick or the D-pad moves it, A (cross) clicks and B (circle) goes
+                       back like Esc. Also on the GAMEPATCH tab (PAD MENU POINTER).
+
+PAD_HINTS=1            The tutorial boxes name the gamepad's buttons, those of the PAD_LAYOUT in
+                       use, while the pad is the last thing you used. The texts are English; in
+                       another language the keyboard texts stay. Also on the GAMEPATCH tab (PAD
+                       BUTTON HINTS).
+
+PAD_ICONS=1            The gamepad pictures of the options menu show the buttons of the pad you
+                       last used, for an Xbox pad, a DualShock 4 or a DualSense. Other pads keep
+                       the game's own pictures. Also on the GAMEPATCH tab (FIXES: PAD BUTTON ICONS).
+
+KEY_MOVE=1             Keyboard movement like a modern PC game: W/A/S/D together walk diagonally,
+                       the character turns smoothly, and holding Alt walks instead of running.
+                       Also on the GAMEPATCH tab (KEYBOARD MOVEMENT).
+
+MINIMAP_SHOPS=1       The minimap also shows the weapon shops, car rentals and repair shops
+                       near you, with the pause map's legend icons, so you need not pause to
+                       find one. The game keeps them in the minimap's list but never draws them
+                       there. Only the ones inside the minimap show; teleports stay hidden.
+                       Also in the options' GAMEPATCH tab (SHOPS ON MINIMAP).
+
+CUSTOM_RADIO=1         The car radio gets a sixth station after the game's five that plays your
+                       own music: put mp3 files (or ogg, flac, wav, m4a, aac, wma) in the
+                       "custom radio" folder next to GangstarMV.exe. Switch to it like any
+                       station; the songs play in a shuffled order and follow the game's MUSIC
+                       volume. The HUD radio shows "PLAY LIST / MY MUSIC" for it, the logo the
+                       game's files keep for the iPhone. CUSTOM_RADIO_VOLUME sets
+                       how loud it is, as a share of the MUSIC volume (0 to 1, blank = 1).
+                       Both are also on the game's SOUND page, under Music: Custom Radio Volume
+                       (slider; its speaker mutes it) and Custom Radio (ON / OFF).
+                       (notes item 18)
+
+PLAYERSWITCH_INVENTORY=1  When the story switches you to Betty, in free roam she shares
+                       Johnny's cash and weapons (with their ammo) instead of starting with
+                       10000 and no weapons. It is one wallet: what she spends or picks up
+                       is Johnny's too. Missions keep the game's own loadout; money Betty
+                       makes in a mission joins the shared wallet when free roam resumes.
+                       Also on the GAMEPATCH tab (FIXES: PLAYERSWITCH INVENTORY, MAC /
+                       SHARED), at once. Tested OK. (notes item 24)
+
+LC_SWITCH=1               Once every mission is done, a marker stands at L.C.'s hotel in free roam.
+                       Walk into it and the screen fades, L.C. appears and you play as him, as
+                       the game's own marker for Betty does; Johnny stays behind. The same
+                       marker takes you back to Johnny. Never during a mission. His cash and
+                       weapons follow PLAYERSWITCH_INVENTORY. Also on the GAMEPATCH tab (FIXES:
+                       PLAY AS L.C.), at once. Tested OK on foot, by car and by motorbike.
+                       (notes item 25)
+
+MISSION_REPLAY=1       A MISSION REPLAY tab in the in-game SERVICES menu, below CORRUPTION, shows
+                       the missions you have completed, with their giver, location, type and
+                       reward. The arrows at the top switch between story, side missions and
+                       races, and START plays one again. You keep the cash you earn in a replay;
+                       everything else goes back when it ends. Also on the GAMEPATCH tab (FIXES:
+                       MISSION REPLAY), from the next opening of SERVICES.
+
+UC_CRUSHER=1           After ON A LION HUNT, the Crusher monster truck of Urban Crime (the freemium
+                       Gangstar Miami for iPhone) stands parked on the beach by LC's hotel, with
+                       its own engine sound; nobody else drives it. It is not included: it needs
+                       add-on\crusher.pak next to the exe, made from your own copy of Urban Crime.
+                       Also on the GAMEPATCH tab (FIXES: CRUSHER MONSTER TRUCK), at once.
+
+RADIO_SONGS=1          The electro, hip-hop and rock stations also play the nine songs of the iPhone
+                       version that the Mac does not have. They are not included: they need
+                       add-on\radio.pak next to the exe, made from your own copy of the iPhone
+                       version. Also on the GAMEPATCH tab (FIXES: RESTORED RADIO SONGS), at once.
+                       (notes item 26)
+
+
+ORIGINAL_MAC_EXPERIENCE=1 - what stays on and what goes off
+-----------------------------------------------------------
+
+The preset overrides the ini.
+
+Forced ON (they fix crashes, restore what the Mac showed, or load faster with the same result):
+  TEXFIX, SWAP_COPY, NO_FLICKER, VTXFIX, CRASH58_GUARD, STOPLOCK_FIX, FAST_FTELL, FAST_FSEEK,
+  FAST_MEMMOVE, STATIC_VBO, DPI_AWARE, LOAD_SLEEP_SKIP, LOAD_BUDGET=200, FAST_LOAD, and MSAA=4
+
+Forced OFF / back to Mac behaviour:
+  FRAME_MS and SWAP_INTERVAL -> defaults (60 ticks/s, vsync off)
+  PHYSICS_SYNC, CAMERA_SYNC, WALK_SYNC, AI_SYNC -> off
+  MENUFLASH_FIX -> 0 (the raw 3D flash before the main menu shows again, as on the Mac)
+  FADE_EDGE_FIX -> 0 (a line of picture along the top and left of black fades, as on the Mac)
+  MENU_FADE_CLICKS -> 0 (the main menu ignores clicks during its fades again, as on the Mac)
+  RADIO_LOGO_FIX -> 0 (the HUD radio logo can show the wrong station again, as on the Mac)
+  SWITCH_SAVE_FIX -> 0 (a save made as Betty gives her things to Johnny again, as on the Mac)
+  SUN_MOON, SPAWN_FADE, ALLOW_WEAPON_SPRINT, MINIMAP_SHOPS, MISSION_REPLAY, CUSTOM_RADIO,
+  RADIO_SONGS, PLAYERSWITCH_INVENTORY, LC_SWITCH, UC_CRUSHER -> 0
+  ANISOTROPIC_FILTERING, AMBIENT_OCCLUSION, BLOOM, WATER_REFLECTIONS, VEHICLE_REFLECTIONS,
+  DYNAMIC_SHADOWS -> 0
+  DRAW_DISTANCE -> 1 (which also leaves the origin collision as on the Mac)
+  TRAFFIC_DENSITY, PEDESTRIAN_DENSITY, PARKED_CAR_DENSITY -> 1
+  FOG_MODE -> 0 (the game's own fog and distances), FOG_HEIGHT -> default
+  HIDE_MORE_GAMES, HIDE_GAMELOFT_LIVE, SHORT_WARNING, CUTSCENE_KEYS, TUTORIAL_KEYS -> 0
+  PAD_LAYOUT -> 0 (the game's own gamepad buttons)
+  PAD_ICONS, PAD_MENU, PAD_HINTS, KEY_MOVE -> 0
+  NO_INTRO, SHOW_CURSOR -> 0
+
+The rule behind it: fixes for crashes and the port's rendering problems, the Mac's own
+anti-aliasing, and the speed-ups that give the same result stay on. The loading speed-ups are among
+them: without them each scene change in the main menu stalls for 116-219 ms, and how long a stall
+lasts depends on the machine, not on the game. Every fix of the original game's own bugs goes off,
+the visible ones too, and so does everything that changes timing, physics, what you hear or see
+beyond the Mac game, how the game responds to input, or what the radio HUD shows.
+
+Left as you set them: FULLSCREEN and the resolution, NO_AUDIO, the audio buffer keys, INTRO_FLIP and
+LOG. The GAMEPATCH tab stays too, holding only this switch.
+
+
+THE LOG AND YOUR PRIVACY
+------------------------
+
+LOG=1          On by default. cache\GangstarMV.log records the version, your settings, your graphics
+               card and driver, your display modes, the names of your game controllers, what a
+               feature skipped or failed at, and the details of a crash. It stays on your computer
+               until you choose to send it with a bug report. The port has no network code.
+               Your Windows user folder, this folder and the game's folder appear in it as
+               %USERPROFILE%, %EXE% and %APP%. A release log does not name your songs; a
+               dev build's log is much longer and does.
+               After a crash, cache\GangstarMV.dmp holds the registers and stacks of the port's
+               threads and the list of loaded modules. It too stays on your computer until you
+               choose to send it, and the next start deletes it. Those three folders and the values
+               of your environment variables are blanked in it, but it is raw memory you cannot
+               read through first, so it can hold other scraps of what the game was doing, such
+               as the file name of a song.
+               LOG=0 turns both off and deletes the old files.
+
+A release build has no debug mode: the traces, test aids, console and GMV_* environment overrides
+are not compiled in. (notes item 30)

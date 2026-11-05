@@ -1,0 +1,27 @@
+# French keyboard: the key at W's place (Z on it) walks, the key labelled W does not
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini SHORT_WARNING=1
+ini NO_INTRO=1
+save Gangstar2.sav
+noprefs
+layout 0000040C
+waitlog keyboard layout.*AZERTY 15
+wait 6
+key SPACE
+wait 12
+click 0.13 0.39
+wait 35
+shot start
+holdscan 2C              # labelled W on AZERTY, Z's place on QWERTY: no move
+wait 3
+releasescan 2C
+shot labelled-w
+still start labelled-w
+holdscan 11              # labelled Z on AZERTY, W's place on QWERTY: forward
+wait 3
+releasescan 11
+shot labelled-z
+moved labelled-w labelled-z
+nolog keyboard layout.*usual keys

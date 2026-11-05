@@ -1,0 +1,81 @@
+name: Bug report
+description: Something in the port does not work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting. Please do not attach any of the game's files: only the port's log, and the crash dump if you want to (see Privacy in the README).
+  - type: dropdown
+    id: system
+    attributes:
+      label: System
+      options:
+        - Windows
+        - Linux
+    validations:
+      required: true
+  - type: input
+    id: system-version
+    attributes:
+      label: System version
+      placeholder: "Windows 11 24H2 / Ubuntu 25.04 / ..."
+    validations:
+      required: true
+  - type: input
+    id: gpu
+    attributes:
+      label: Graphics card and driver version
+      placeholder: "NVIDIA RTX 3050 Ti, driver ..."
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Port version
+      description: Near the top of cache/GangstarMV.log, the line that ends with the version.
+      placeholder: "V1.0.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: build
+    attributes:
+      label: Download
+      options:
+        - Normal
+        - "-noicon"
+        - "-dev"
+        - Built from the source
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to make it happen
+      placeholder: |
+        1. Load the save at ...
+        2. Drive to ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: Drag cache/GangstarMV.log into this box. It lists the settings you changed.
+    validations:
+      required: true
+  - type: checkboxes
+    id: copy
+    attributes:
+      label: Game copy
+      options:
+        - label: I use my own copy of the Mac game, and its SHA-1 is the one in the README.
+          required: true

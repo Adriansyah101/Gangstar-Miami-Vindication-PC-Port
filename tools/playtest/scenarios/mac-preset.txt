@@ -1,0 +1,21 @@
+# ORIGINAL_MAC_EXPERIENCE=1 from the start, to the main menu and the options page
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini ORIGINAL_MAC_EXPERIENCE=1
+wait 45
+shot before-key
+key SPACE
+wait 20
+shot menu
+click 0.12 0.625
+wait 3
+shot options
+click 0.12 0.70
+wait 3
+shot gamepatch
+expectlog ^\[gamepatch\] start-up loading screen takes
+expectlog ^\[gamepatch\] streaming wait no longer sleeps
+expectlog ^\[gamepatch\] streaming wait takes 200 items a tick
+nolog ^\[gamepatch\] full-screen fades cover the top row
+nolog ^\[gamepatch\] main menu takes clicks during its background fades

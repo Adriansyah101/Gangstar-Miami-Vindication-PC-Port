@@ -1,0 +1,35 @@
+# A first start with no GangstarMV.ini: the game writes its defaults (the enhancements on, full screen at the
+# monitor's resolution) and plays with them, into the city. No add-on and no songs, as a friend's copy.
+noini
+dev                      # waits for [intro] done, a dev build's trace line
+save Gangstar2.sav
+waitlog ^\[intro\] done 120
+wait 8
+click 0.5 0.5
+wait 5
+shot menu
+click 0.13 0.39
+wait 45
+shot start
+holdscan 11
+wait 3
+releasescan 11
+shot walked
+leftmenu menu walked
+expectlog ^\[config\] created .*with the default settings
+inihas ^ORIGINAL_MAC_EXPERIENCE=0$
+inihas ^FRAME_MS=8\.3333$
+inihas ^TRAFFIC_DENSITY=3$
+inihas ^CUSTOM_RADIO_VOLUME=0\.53$
+inihas ^BLOOM_WINDOWS=2$
+expectlog ^\[ao\] AMBIENT_OCCLUSION=1
+expectlog ^\[bloom\] BLOOM=2
+expectlog ^\[ssr\] WATER_REFLECTIONS=1
+expectlog ^\[vr\] VEHICLE_REFLECTIONS=1
+expectlog ^\[shadow\] DYNAMIC_SHADOWS=1
+expectlog ^\[fog\] FOG_MODE=2
+expectlog ^\[gamepatch\] SHORT_WARNING=1
+expectlog ^\[gamepatch\] start-up loading screen takes
+expectlog ^\[crusher\] UC_CRUSHER=1 but .* left out
+expectlog ^\[radio songs\] RADIO_SONGS=1 but .* stays the Mac's
+expectlog ^\[radio\] custom station: no songs

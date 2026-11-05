@@ -1,0 +1,33 @@
+# A DualSense: skip the warning, the menu's pad pictures follow it, into the city by the pad, the stick walks
+dev
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini SHORT_WARNING=1
+ini NO_INTRO=1
+ini PAD_MENU=1
+ini PAD_ICONS=1
+ini PAD_TEST=ds5
+save Gangstar2.sav
+wait 8
+padfor 300 A                       # the warning: cross is A
+wait 14
+shot menu
+padfor 2600 lx=-32767 ly=-32767
+padfor 478 lx=20000                # 278 view units a second with this dead zone
+padfor 1078 ly=20000
+wait 1
+shot pointer
+padfor 150 A
+wait 35
+shot start
+leftmenu menu start
+pad ly=-32767
+wait 3
+pad
+shot walked
+moved start walked
+expectlog ^\[joy\] 1 controller\(s\): 0="PAD_TEST" \(054c:0ce6, gamepad, 4 axes, 14 buttons, hat\)
+expectlog ^\[joy\] test: .*style=3
+expectlog ^\[padicons\] the gamepad atlas
+expectlog ^\[padicons\] texture \d+ now shows .*DualSense

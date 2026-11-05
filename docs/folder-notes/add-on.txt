@@ -1,0 +1,26 @@
+More about add-ons: http://tiny.cc/gangstarmv-add-on
+
+This folder is for optional add-ons. None is included, and the game plays the same without them.
+
+An add-on holds files of another version of the game, so you make it from your own copy.
+Never share a .pak: it contains the game's files.
+
+  crusher.pak   UC_CRUSHER: the Crusher monster truck of Urban Crime, parked on the beach by
+                LC's hotel after ON A LION HUNT. Made from your own copy of Urban Crime.
+
+  radio.pak     RADIO_SONGS: the nine radio songs of the iPhone version that the Mac does not
+                have. Made from your own copy of the iPhone version.
+
+To use one:
+  1. Put the .pak in this folder, under exactly that name.
+  2. Start the game. Both are on by default; OPTIONS, GAMEPATCH, FIXES in the game, or
+     savegame\GangstarMV.ini, turns one off.
+
+To make one, you need Python 3 and the source folder of this release:
+  tools\uc_crusher_pack.py   packs a folder of the files into a .pak
+  tools\uc_crusher_tex.py    converts the Crusher's two textures
+  tools\radio_gain.py        raises the iPhone songs to the Mac's level
+The first lines of each script show how to run it. host\games\gangstar\features\ucveh.c lists the Crusher's files and
+host\games\gangstar\features\radiosongs.c lists the songs.
+
+This note does nothing in the game. You can delete it.

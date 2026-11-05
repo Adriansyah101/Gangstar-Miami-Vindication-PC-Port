@@ -1,0 +1,41 @@
+# Every graphics enhancement on, into the city: walk and turn the camera, so that each effect draws.
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini SHORT_WARNING=1
+ini NO_INTRO=1
+ini ANISOTROPIC_FILTERING=16
+ini AMBIENT_OCCLUSION=1
+ini BLOOM=2
+ini WATER_REFLECTIONS=1
+ini VEHICLE_REFLECTIONS=1
+ini DYNAMIC_SHADOWS=1
+ini SUN_MOON=1
+ini SPAWN_FADE=1
+ini DRAW_DISTANCE=2
+ini FOG_MODE=2
+ini TRAFFIC_DENSITY=2
+ini PEDESTRIAN_DENSITY=2
+ini KEY_MOVE=1
+save Gangstar2.sav
+wait 8
+key SPACE
+wait 12
+click 0.13 0.39
+wait 45
+shot start
+holdscan 11
+wait 3
+releasescan 11
+shot walked
+moved start walked
+look 400 0
+wait 2
+shot turned
+moved walked turned
+expectlog ^\[ao\] AMBIENT_OCCLUSION=1
+expectlog ^\[bloom\] BLOOM=2
+expectlog ^\[ssr\] WATER_REFLECTIONS=1
+expectlog ^\[vr\] VEHICLE_REFLECTIONS=1
+expectlog ^\[shadow\] DYNAMIC_SHADOWS=1
+expectlog ^\[fog\] FOG_MODE=2

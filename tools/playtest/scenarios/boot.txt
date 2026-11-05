@@ -1,0 +1,16 @@
+# Start with the defaults, past the warning, to the main menu
+ini FULLSCREEN=0
+ini SCREEN_WIDTH=1280
+ini SCREEN_HEIGHT=720
+ini SHORT_WARNING=1
+# lines an older ini still has for keys taken out: skipped without a message
+ini NO_MOUSELOOK=0
+ini GMV_NO_RMB=0
+ini NO_SUCH_KEY=1
+wait 8
+key SPACE
+wait 20
+shot menu
+expectlog ^\[gamepatch\] start-up loading screen takes
+nolog unknown setting "(GMV_)?NO_(MOUSELOOK|RMB)"
+expectlog unknown setting "NO_SUCH_KEY"
