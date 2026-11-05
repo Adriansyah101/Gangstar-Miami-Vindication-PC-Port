@@ -1,7 +1,6 @@
 # Contributing
 
-Thank you for helping. Testing on hardware that has not been tried, and playing the game to the end, are as useful
-as code: see [Contributing](README.md#contributing) in the README. This page is for changes to the source.
+Thank you for helping. Testing on hardware that has not been tried is as useful as code: see [Contributing](README.md#contributing) in the README. This page is for changes to the source.
 
 ## Ground rules
 

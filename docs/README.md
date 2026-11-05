@@ -18,7 +18,7 @@ Version **V1.0.0** (2026-11-05). Tested on Windows 11 with an NVIDIA RTX 3050 Ti
 |---|---|
 | Loading | 4360 low-range patches applied and verified, 451 static initializers run, 2660-file asset pack loads |
 | Imports | 477 of 528 implemented. An audit found no way to reach the other 51 in this build ([details](NOTES.md#the-51-unfilled-imports)) |
-| Game | Menus, on foot, driving, flying, cutscenes and races; a save with 66 of 66 missions done has been played |
+| Game | Menus, on foot, driving, flying, cutscenes and races; played to the end on V1.0.0 |
 | Graphics | OpenGL with the Mac's 4x MSAA in an SDL3 window, window or full screen, any resolution the monitor lists |
 | Input | Keyboard (with the game's own keys on AZERTY), mouse, Xbox, PlayStation and other pads, all through SDL3 |
 | Sound | The game's own mixer through SDL3, which follows the default output device; the intro movie decoded by Media Foundation |
@@ -29,12 +29,11 @@ Version **V1.0.0** (2026-11-05). Tested on Windows 11 with an NVIDIA RTX 3050 Ti
 
 - **Other hardware:** nothing has been run on an AMD or Intel GPU. The enhancements use their own
   shaders, so those are the most likely to differ.
-- **A full playthrough on the current build:** the game was finished on an earlier build, before most of
-  the patches were added. No run to the end on the current build is on record, with or without
-  `ORIGINAL_MAC_EXPERIENCE=1`.
-- **The engine sound:** its pitch ramp has not been compared with a real Mac.
-- **Some late changes:** no in-game run is on record yet for the unsmoothed glow of `SUN_MOON=2`, the
-  custom station's HUD logo, or its logo being cleared when `ORIGINAL_MAC_EXPERIENCE` is switched on.
+- **Linux on a real GPU:** the Linux build has run in WSL2 only, with Mesa's software renderer.
+
+Confirmed on 2026-11-05: the game played to the end on V1.0.0, the engine sound, the unsmoothed glow of
+`SUN_MOON=2`, the custom station's HUD logo, and that logo being cleared when `ORIGINAL_MAC_EXPERIENCE` is
+switched on.
 
 ## Getting started
 

@@ -215,14 +215,9 @@ to do. The graphics options weigh on the graphics card. On a slower PC, in this 
    optional graphics use their own shaders, so those are the most likely to differ.
 2. **Linux has run in WSL2 only** (Debian 13, with Mesa's software renderer). It has not been tried on a Linux machine
    with a real GPU yet.
-3. **No full playthrough on this version.** The game was finished on an earlier build, and a save with all 66
-   missions done has been played, but no run to the end is on record for the current one.
-4. **One crash not explained:** a fault was seen once while replaying MIAMI BOUND! after switching
+3. **One crash not explained:** a fault was seen once while replaying MIAMI BOUND! after switching
    `ORIGINAL_MAC_EXPERIENCE`. It did not come back in three more replays, and the cause is not proved.
-5. **Offline only.** Gameloft's services are long gone, so the game's online buttons report no connection.
-6. **The engine sound** has not been compared with a real Mac.
-7. **Some late changes have not been seen in game yet:** see
-   [Not verified yet](docs/README.md#not-verified-yet).
+4. **Offline only.** Gameloft's services are long gone, so the game's online buttons report no connection.
 
 ### Reporting a bug
 
@@ -324,8 +319,6 @@ The source has no icon, because the icon is the game's art, so your program is b
 Help is welcome, and the most useful help right now needs no code at all:
 
 - **Play it on hardware that has not been tried:** an AMD or Intel GPU, Linux on a real GPU, the Steam Deck.
-- **Play it to the end** on this version.
-- **Compare the engine sound** with a real Mac, if you have one.
 
 Report what you find on the [Issues](https://github.com/Adriansyah101/Gangstar-Miami-Vindication-PC-Port/issues)
 page, with the log, even when everything works. For code, [`CONTRIBUTING.md`](CONTRIBUTING.md) explains how the
