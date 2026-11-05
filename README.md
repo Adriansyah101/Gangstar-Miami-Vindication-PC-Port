@@ -8,6 +8,7 @@
   <a href="https://github.com/Adriansyah101/Gangstar-Miami-Vindication-PC-Port/releases/latest"><img src="https://img.shields.io/github/v/release/Adriansyah101/Gangstar-Miami-Vindication-PC-Port" alt="Latest release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/Adriansyah101/Gangstar-Miami-Vindication-PC-Port" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue" alt="Platforms: Windows, Linux">
+  <img src="https://img.shields.io/badge/CPU-x86%20(Intel%20%2F%20AMD)-blue" alt="CPU: x86 (Intel or AMD)">
   <a href="https://github.com/Adriansyah101/Gangstar-Miami-Vindication-PC-Port/releases"><img src="https://img.shields.io/github/downloads/Adriansyah101/Gangstar-Miami-Vindication-PC-Port/total" alt="Downloads"></a>
 </p>
 
@@ -29,8 +30,8 @@
 Gangstar: Miami Vindication is a 2011 open-world action game by Gameloft. It is set in Miami and played on foot, by
 car and in the air, with story missions, side missions and races.
 
-This repository contains a Windows and Linux loader for **the macOS i386 release of the game, version 1.0.0**. There
-is no CPU emulation, because the game is already x86. A custom Mach-O loader runs the official executable at its own
+This repository contains a Windows and Linux loader for **the macOS i386 release of the game, version 1.0.0**, for
+PCs with an **x86 processor (Intel or AMD)**. There is no CPU emulation, because the game is already x86. A custom Mach-O loader runs the official executable at its own
 addresses, and host shims supply the macOS libraries it imports, in the spirit of Wine or Darling.
 
 The port runs the game with the fixes it needs on a PC, and adds optional extras, which are on by default. One
@@ -76,14 +77,17 @@ game is included either.
 
 | | Windows | Linux |
 |---|---|---|
+| Processor | x86 (Intel or AMD), 64-bit or 32-bit | 64-bit x86 (Intel or AMD) |
 | System | Windows 10 or 11. Tested on Windows 11; older versions have not been tried | 64-bit x86 with 32-bit support and glibc 2.35 or newer. Tested on Debian 13 (in WSL2) |
 | Libraries | Included (`SDL3.dll`) | 32-bit SDL 3.2 or newer, OpenGL, FreeType and fontconfig; `ffmpeg` for the intro (see below) |
 | Graphics | OpenGL 2.1 with framebuffer objects, for the anti-aliasing and the graphics options. Tested on an NVIDIA RTX 3050 Ti | the same |
 | Memory | The game used about 230 MB in the city with every option on, at 1920x1080 | the same |
 | Disk | About 800 MB for the game, 7 MB for the port | About 800 MB for the game, 2 MB for the port |
 
-The program is 32-bit x86, like the game. **Not supported:** macOS (play the original there) and ARM Linux. Windows on
-ARM, which runs x86 programs through emulation, has not been tried.
+**x86 processors only (Intel or AMD).** The program is 32-bit x86 code, like the game, and runs it as it is, with no
+emulation. **Not supported:** ARM processors, such as Linux on a Raspberry Pi or an ARM board, and Apple Silicon;
+and macOS, where the original game runs as it is. Windows on ARM (Snapdragon PCs) runs x86 programs through its own
+emulation, but the port has not been tried there.
 
 ## Setup Instructions (For Players)
 
