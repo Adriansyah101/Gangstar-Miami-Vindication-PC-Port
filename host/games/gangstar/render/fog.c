@@ -1,11 +1,8 @@
-/* fog.c -- FOG_MODE 1: fog on the whole world */
+/* fog.c -- FOG_MODE 1: fog on the whole world, and the sea carried on past the map's edge (sea_beyond) */
 #include <math.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include "compat.h"
-#include <xmmintrin.h>
 #include <GL/gl.h>
 
 #include "layout.h"
@@ -92,7 +89,6 @@ static struct {
     GLint buf, abo;                                     /* the buffer object it is in (0 = client memory); GL_ARRAY_BUFFER */
     unsigned char col[1024 * 64];
 } sky_floor;
-int g_sky_floor_on;                              /* the colour pointer is sky_floor.col (VBO_STREAM keeps off) */
 
 static int sky_floor_begin(GLsizei count, const uint16_t *ix, const char *p, GLint st, const char *cp, GLint cst,
                            GLint cst_given, const void *cp_given, GLint cbuf, GLint abo)
@@ -120,7 +116,6 @@ static int sky_floor_begin(GLsizei count, const uint16_t *ix, const char *p, GLi
     glColorPointer(4, GL_UNSIGNED_BYTE, cst, sky_floor.col);
     if (abo)
         cl_array_buffer((GLuint)abo);
-    g_sky_floor_on = 1;
     return 1;
 }
 
@@ -131,7 +126,6 @@ void sky_floor_end(void)
     glColorPointer(4, GL_UNSIGNED_BYTE, sky_floor.stride, sky_floor.ptr);
     if (sky_floor.buf != sky_floor.abo)
         cl_array_buffer((GLuint)sky_floor.abo);
-    g_sky_floor_on = 0;
 }
 
 /* Before the sky gradient's draw (the skybox's unblended indexed draw, client arrays); 1 = its colours
@@ -393,4 +387,172 @@ int fog_clip_begin(void)
     }
     glEnable(FOG_CLIP_PLANE);
     return 1;
+}
+
+/* The city's sea (alpha-blended, no depth writes, unit 0 texture times vertex colour, client arrays
+   interleaved by 24 bytes) fills the box SEA_X0..SEA_X1 x SEA_Y0..SEA_Y1, deep blue at its edge, and
+   stops there.  Near the map's edges and from the air that edge is in view well inside the fog, a
+   straight line with nothing past it.  With fog on the whole world the sea goes on past the box, around
+   the camera to beyond the pass's far plane, in the edge's colour and with the texture laid as the
+   sea's own (fitted to the chunk's texture coordinates, so it scrolls with them).  It is drawn right
+   after the first chunk of sea on the box's edge in each pass of a frame (the city's near pass and its
+   low-detail far pass, each with its own depth range; drawn in the far pass alone, it was all past the
+   fog's clip whenever the near pass reached beyond it), in that chunk's state and fog, in squares of
+   SEA_CELL so the fog is right across each. */
+#define SEA_X0   -120719.0f
+#define SEA_X1    119609.0f
+#define SEA_Y0   -110358.0f
+#define SEA_Y1    146129.0f
+#define SEA_CELL  25000.0f
+#define SEA_MAX   1024                                  /* squares a frame */
+
+void sea_beyond(GLsizei count, GLenum type, const void *idx)
+{
+    static unsigned done[2] = {~0u, ~0u};               /* by pass: the near one, the low-detail far one */
+    static unsigned char edge[4] = {30, 58, 111, 255};
+    static GLfloat pos[SEA_MAX * 6][3], uv[SEA_MAX * 6][2];
+    static unsigned char col[SEA_MAX * 6][4];
+    int pass = g_ao_dr[0] >= 0.25f;
+    if (done[pass] == g_frame_no || g_sky_draw || !g_blend_on || g_blend_src != GL_SRC_ALPHA ||
+        g_blend_dst != GL_ONE_MINUS_SRC_ALPHA || type != GL_UNSIGNED_SHORT || count < 3 || count > 20000)
+        return;
+    GLboolean dmask = 1;
+    glGetBooleanv(GL_DEPTH_WRITEMASK, &dmask);
+    if (dmask)
+        return;
+    GLint cat = 0, sz = 0, ty = 0, st = 0, csz = 0, cty = 0, cst = 0, tsz = 0, tty = 0, tst = 0;
+    const char *p = NULL, *cp = NULL, *tp = NULL;
+    glGetIntegerv(0x84E1, &cat);                        /* GL_CLIENT_ACTIVE_TEXTURE */
+    if (cat != 0x84C0 || !glIsEnabled(GL_COLOR_ARRAY) || !glIsEnabled(GL_TEXTURE_COORD_ARRAY))
+        return;
+    glGetIntegerv(GL_VERTEX_ARRAY_SIZE, &sz);
+    glGetIntegerv(GL_VERTEX_ARRAY_TYPE, &ty);
+    glGetIntegerv(GL_VERTEX_ARRAY_STRIDE, &st);
+    glGetPointerv(GL_VERTEX_ARRAY_POINTER, (void **)&p);
+    glGetIntegerv(GL_COLOR_ARRAY_SIZE, &csz);
+    glGetIntegerv(GL_COLOR_ARRAY_TYPE, &cty);
+    glGetIntegerv(GL_COLOR_ARRAY_STRIDE, &cst);
+    glGetPointerv(GL_COLOR_ARRAY_POINTER, (void **)&cp);
+    glGetIntegerv(GL_TEXTURE_COORD_ARRAY_SIZE, &tsz);
+    glGetIntegerv(GL_TEXTURE_COORD_ARRAY_TYPE, &tty);
+    glGetIntegerv(GL_TEXTURE_COORD_ARRAY_STRIDE, &tst);
+    glGetPointerv(GL_TEXTURE_COORD_ARRAY_POINTER, (void **)&tp);
+    p = cl_ptr(0x8896, p, NULL);                        /* GL_VERTEX_ARRAY_BUFFER_BINDING */
+    cp = cl_ptr(0x8898, cp, NULL);                      /* GL_COLOR_ARRAY_BUFFER_BINDING */
+    tp = cl_ptr(0x889A, tp, NULL);                      /* GL_TEXTURE_COORD_ARRAY_BUFFER_BINDING (unit 0) */
+    const uint16_t *ix = (const uint16_t *)cl_ptr(0x8895, idx, NULL);
+    if (!ix || !p || !cp || !tp || sz != 3 || ty != GL_FLOAT || st != 24 || csz != 4 || cty != GL_UNSIGNED_BYTE ||
+        cst != 24 || tsz != 2 || tty != GL_FLOAT || tst != 24)
+        return;
+    /* Flat at sea level, on the box's edge, and three corners to fit the texture to. */
+    int lo = -1, hi = -1, on_edge = -1;
+    for (int k = 0; k < count; k++) {
+        const float *v = (const float *)(p + (size_t)ix[k] * 24);
+        if (fabsf(v[2]) > 1)
+            return;
+        if (lo < 0 || v[0] < ((const float *)(p + (size_t)lo * 24))[0]) lo = ix[k];
+        if (hi < 0 || v[0] > ((const float *)(p + (size_t)hi * 24))[0]) hi = ix[k];
+        if (on_edge < 0 && (fabsf(v[0] - SEA_X0) < 2 || fabsf(v[0] - SEA_X1) < 2 || fabsf(v[1] - SEA_Y0) < 2 ||
+                            fabsf(v[1] - SEA_Y1) < 2))
+            on_edge = ix[k];
+    }
+    if (on_edge < 0)
+        return;
+    const float *a = (const float *)(p + (size_t)lo * 24), *b = (const float *)(p + (size_t)hi * 24);
+    double ex = b[0] - a[0], ey = b[1] - a[1], best = 0;
+    int third = -1;
+    for (int k = 0; k < count; k++) {
+        const float *v = (const float *)(p + (size_t)ix[k] * 24);
+        double area = fabs(ex * (v[1] - a[1]) - ey * (v[0] - a[0]));
+        if (area > best) best = area, third = ix[k];
+    }
+    if (third < 0 || best < 1e6)
+        return;
+    const float *c = (const float *)(p + (size_t)third * 24);
+    const float *ta = (const float *)(tp + (size_t)lo * 24), *tb = (const float *)(tp + (size_t)hi * 24),
+                *tc = (const float *)(tp + (size_t)third * 24);
+    double dx1 = b[0] - a[0], dy1 = b[1] - a[1], dx2 = c[0] - a[0], dy2 = c[1] - a[1];
+    double det = dx1 * dy2 - dy1 * dx2, fit[2][3];
+    for (int j = 0; j < 2; j++) {
+        double d1 = tb[j] - ta[j], d2 = tc[j] - ta[j];
+        fit[j][0] = (d1 * dy2 - dy1 * d2) / det;
+        fit[j][1] = (dx1 * d2 - d1 * dx2) / det;
+        fit[j][2] = ta[j] - fit[j][0] * a[0] - fit[j][1] * a[1];
+    }
+    for (int k = 0; k < count; k += count / 8 + 1) {   /* the texture must lie flat across the sea */
+        const float *v = (const float *)(p + (size_t)ix[k] * 24), *t = (const float *)(tp + (size_t)ix[k] * 24);
+        for (int j = 0; j < 2; j++)
+            if (fabs(fit[j][0] * v[0] + fit[j][1] * v[1] + fit[j][2] - t[j]) > 0.01)
+                return;
+    }
+    memcpy(edge, cp + (size_t)on_edge * 24, 4);
+    done[pass] = g_frame_no;
+    /* The camera, and how far this pass sees (corners of the screen included). */
+    GLfloat m[16];
+    glGetFloatv(GL_MODELVIEW_MATRIX, m);
+    float camx = -(m[0] * m[12] + m[1] * m[13] + m[2] * m[14]), camy = -(m[4] * m[12] + m[5] * m[13] + m[6] * m[14]);
+    float far1 = fabsf(g_ao_proj[14] / (g_ao_proj[10] + 1)), far2 = fabsf(g_ao_proj[14] / (g_ao_proj[10] - 1));
+    float r = 1.5f * (far1 > far2 ? far1 : far2);
+    if (!(r > 0) || r > 2e6f)
+        return;
+    float x0 = camx - r, x1 = camx + r, y0 = camy - r, y1 = camy + r;
+    float rect[4][4] = {{x0, SEA_X0, y0, y1}, {SEA_X1, x1, y0, y1},
+                        {x0 > SEA_X0 ? x0 : SEA_X0, x1 < SEA_X1 ? x1 : SEA_X1, y0, SEA_Y0},
+                        {x0 > SEA_X0 ? x0 : SEA_X0, x1 < SEA_X1 ? x1 : SEA_X1, SEA_Y1, y1}};
+    int n = 0;
+    for (int q = 0; q < 4; q++) {
+        float *R = rect[q];
+        if (R[1] <= R[0] || R[3] <= R[2])
+            continue;
+        int nx = (int)ceilf((R[1] - R[0]) / SEA_CELL), ny = (int)ceilf((R[3] - R[2]) / SEA_CELL);
+        for (int i = 0; i < nx; i++)
+            for (int j = 0; j < ny && n < SEA_MAX; j++) {
+                float qx0 = R[0] + (R[1] - R[0]) * i / nx, qx1 = R[0] + (R[1] - R[0]) * (i + 1) / nx;
+                float qy0 = R[2] + (R[3] - R[2]) * j / ny, qy1 = R[2] + (R[3] - R[2]) * (j + 1) / ny;
+                const float corner[6][2] = {{qx0, qy0}, {qx1, qy0}, {qx1, qy1}, {qx0, qy0}, {qx1, qy1}, {qx0, qy1}};
+                for (int k = 0; k < 6; k++) {
+                    GLfloat *P = pos[n * 6 + k];
+                    P[0] = corner[k][0], P[1] = corner[k][1], P[2] = 0;
+                    for (int t = 0; t < 2; t++)
+                        uv[n * 6 + k][t] = (GLfloat)(fit[t][0] * P[0] + fit[t][1] * P[1] + fit[t][2]);
+                    memcpy(col[n * 6 + k], edge, 4);
+                }
+                n++;
+            }
+    }
+    if (!n)
+        return;
+    static void(APIENTRY * draw)(GLenum, GLint, GLsizei);
+    static void(APIENTRY * client_tex)(GLenum);
+    if (!draw) draw = gl_real("glDrawArrays");
+    if (!client_tex) client_tex = gl_real("glClientActiveTexture");
+    if (!draw || !client_tex)
+        return;
+    GLint abo = 0;
+    glGetIntegerv(0x8894, &abo);                        /* GL_ARRAY_BUFFER_BINDING */
+    glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
+    if (abo)
+        cl_array_buffer(0);                             /* the squares are client arrays */
+    for (int u = 3; u >= 0; u--) {
+        client_tex(0x84C0 + u);
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    }
+    glDisableClientState(GL_NORMAL_ARRAY);
+    glDisableClientState(0x845E);                       /* GL_SECONDARY_COLOR_ARRAY */
+    glDisableClientState(0x8457);                       /* GL_FOG_COORD_ARRAY */
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, pos);
+    glColorPointer(4, GL_UNSIGNED_BYTE, 0, col);
+    glTexCoordPointer(2, GL_FLOAT, 0, uv);
+    draw(GL_TRIANGLES, 0, n * 6);
+    glPopClientAttrib();
+    if (abo)                                            /* the pop restores it too; the game's own bind cache relies on it */
+        cl_array_buffer((GLuint)abo);
+    client_tex(0x84C0);
+    static int logged;
+    if (!logged++)
+        gmv_trace("[fog] the sea goes on past the map's edge (%d squares now, colour %u %u %u)\n", n, edge[0], edge[1],
+                edge[2]);
 }

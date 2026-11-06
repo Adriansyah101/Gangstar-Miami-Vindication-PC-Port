@@ -1,4 +1,4 @@
-/* The game's imports: what each one is, and what its bind slots get pointed at. */
+/* imports.h -- the game's imports: what each one is, and what its bind slots get pointed at. */
 #ifndef GMV_IMPORTS_H
 #define GMV_IMPORTS_H
 

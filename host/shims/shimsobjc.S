@@ -1,4 +1,4 @@
-/* objc_msgSend for the game's legacy i386 Objective-C.
+/* shimsobjc.S -- objc_msgSend for the game's legacy i386 Objective-C.
 
    id objc_msgSend(id self, SEL _cmd, ...) -- the receiver and selector are the first two stack
    arguments.  We ask the C runtime for the method implementation and TAIL-JUMP to it with the

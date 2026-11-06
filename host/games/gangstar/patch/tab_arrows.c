@@ -1,6 +1,5 @@
 /* tab_arrows.c -- GAMEPATCH_TAB: the lines' value arrows, added to the menu file as it loads */
 #include "compat.h"
-#include <float.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>

@@ -38,12 +38,11 @@
    after the original returns.  A body made non-static later is put in its list position by a walk
    from the list head (it is a new body, near the head).
 
-   Dev: GMV_B2_VERIFY=1 (build\b2_verify.bat) compares the short list with a full walk at every
+   Dev: GMV_B2_VERIFY=1 in the environment (with GMV_PERF_PROFILE=1 for its report) compares the short list with a full walk at every
    step, logs any difference and then uses the full walk's.  GMV_FAST_B2SOLVE=0 keeps the original. */
 
 #include "compat.h"
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 

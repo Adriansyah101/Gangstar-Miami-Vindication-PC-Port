@@ -1,10 +1,7 @@
 /* mission_replay.c -- MISSION_REPLAY */
 #include "compat.h"
-#include <float.h>
-#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "layout.h"
@@ -32,8 +29,9 @@
    - the menu set-up's registration of ServiceMissions (0x1600b4) also registers ServiceReplay, a
      second MISSIONS page with our show, hide and onEvent in a copy of its vtable.
    Our page pages through the records of one category whose completion bit is set (see
-   MISSION_SURVEY): story (groups 1-5, the chapters), side (group 7, amelia; the five of group 8,
-   reginald, have no bit in the save, so they never show) or races (group 6, albert).  The category
+   game_read.c): story (groups 1-5, the chapters), side (group 7, amelia, and group 8, reginald, whose
+   bits the original save never kept; MISSION_SAVE_FIX keeps them since 2026-11-06) or races (group 6,
+   albert).  The category
    is the CONTROLS page's ◀ category ▶ header (widgetActionKeyTitle, 0x22), which our page also
    lists: while shown it is moved over the top of the mission panel and runs its texts and events
    from a copy of its vtable; our hide hides it at once (no fade where it was), puts it back where
@@ -45,7 +43,7 @@
    MISSION_REPLAY=1 too, and slot 6 stays hidden while ORIGINAL_MAC_EXPERIENCE is switched on.
    Slot 6 is also hidden while a mission or a replay is under way.
 
-   The replay.  A mission is one of the world's scripts (see MISSION_SURVEY) that waits at a 0x8f
+   The replay.  A mission is one of the world's scripts (see game_read.c) that waits at a 0x8f
    command, its giver's checkpoint, for the player or for the MISSIONS page's START; once the
    mission is done its script has run to its end and lies idle.  The save keeps only which scripts
    run (RUSC), the story's 18 variables (MINT, at the scripts' +0x3b8) and the completion bits.
@@ -761,7 +759,7 @@ static const char *mr_str(int id)
 static int mr_key(uint32_t rec, uint32_t mgr)
 {
     int i = (int)ms_rd(rec + 4), j = (int)ms_rd(rec + 0x1c), k = (int)ms_rd(rec + 0x18);
-    if (i < 1 || i > 7 || j < 1 || j > 6 || k < 1 || k > 5 || (i == 6 ? 2 : i == 7 ? 1 : 0) != mr_cat)
+    if (i < 1 || i > 8 || j < 1 || j > 6 || k < 1 || k > 5 || (i == 6 ? 2 : i >= 7 ? 1 : 0) != mr_cat)
         return -1;
     int bit = 5 * (j - 1) + k - 1;
     if (!(ms_rd(mgr + 0x8c + 4 * i) >> bit & 1))

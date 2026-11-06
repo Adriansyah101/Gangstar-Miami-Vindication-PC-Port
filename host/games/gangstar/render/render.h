@@ -5,9 +5,6 @@
 #include "glshim.h"
 
 #if !GMV_DEV
-#define g_fog_survey 0
-#define g_bloom_survey 0
-#define g_veh_survey 0
 #define g_vr_debug 0
 #endif
 typedef struct {                                        /* SUN_MOON glow occlusion */
@@ -20,11 +17,6 @@ extern int g_ssr_want, g_ssr;
 extern int g_vr_want, g_vr;
 extern int g_ds_want, g_ds;
 #define FOG_CLIP_PLANE 0x3005                           /* GL_CLIP_PLANE5 */
-#if GMV_DEV
-extern int g_fog_survey;
-extern int g_bloom_survey;
-extern int g_veh_survey;
-#endif
 
 /* present_hold.c */
 uint32_t gmv_top_state_vtable(void);
@@ -60,7 +52,7 @@ extern GLfloat g_ao_fogp[4];
 typedef struct {
     GLfloat m[16], dr[2];
     GLint vp[4];
-    GLfloat fog[4];                                      
+    GLfloat fog[4];
     unsigned n;
 } g_ao_layer_t;
 extern g_ao_layer_t g_ao_layer[AO_LAYERS];
@@ -98,7 +90,7 @@ typedef struct {
 } aof_t;
 extern aof_t aof;
 typedef struct {
-    GLuint p_ao, p_blur, p_comp;                         
+    GLuint p_ao, p_blur, p_comp;
     GLuint fbo_depth, fbo[2], t_depth, t[2];
     int w, h, hw, hh;
 } ao_t;
@@ -127,9 +119,9 @@ extern int g_tod_ms;
 typedef struct {
     GLuint p_pre, p_down, p_up;
     GLuint fbo_scene, t_scene, fbo_depth, t_depth, fbo[BL_LEVELS], t[BL_LEVELS];
-    GLuint fbo_glow, t_glow;                             
+    GLuint fbo_glow, t_glow;
     int lw[BL_LEVELS], lh[BL_LEVELS];
-    int w, h, n;                                         
+    int w, h, n;
 } bl_t;
 extern bl_t bl;
 void bl_linear(void);
@@ -153,34 +145,34 @@ extern float g_fog_clip, g_cam_z;
 extern int g_fog_mode;
 extern float g_fog_height;
 typedef struct {
-    int n;                                               
-    GLfloat z[SKY_KEYS], c[SKY_KEYS][3];                 
-    GLfloat wall;                                        
-    GLfloat inv[9], cam[3];                              
-    GLfloat hz[4];                                       
+    int n;
+    GLfloat z[SKY_KEYS], c[SKY_KEYS][3];
+    GLfloat wall;
+    GLfloat inv[9], cam[3];
+    GLfloat hz[4];
 } sky_t;
 extern sky_t sky;
 const char *cl_ptr(GLenum binding, const void *p, GLint *buf);
 void cl_array_buffer(GLuint b);
-extern int g_sky_floor_on;
 void sky_floor_end(void);
 int sky_read(GLsizei count, GLenum type, const void *idx);
 int fog_force_begin(void);
 void fog_force_end(int kind);
 int fog_clip_begin(void);
+void sea_beyond(GLsizei count, GLenum type, const void *idx);
 
 /* fog_hybrid.c */
 #define FOG_HYBRID_K 3.0f
 extern const char fh_fs_head[];
 extern const unsigned fh_fs_head_size;
 typedef struct {
-    int ready;                                           
+    int ready;
     GLuint p[3];
     GLint u_invp[3], u_vp[3], u_dr[3], u_fogp[3], u_hgt[3];
-    GLfloat set[3][30];                                  
+    GLfloat set[3][30];
     GLfloat proj[16], invp[16];
     int inv_ok;
-    unsigned frame, shaded, linear, logs;                
+    unsigned frame, shaded, linear, logs;
     DWORD next_log;
 } fh_t;
 extern fh_t fh;
@@ -191,12 +183,12 @@ void fog_hybrid_end(int on);
 
 /* bloom_glow.c */
 typedef struct {
-    int ready;                                           
-    unsigned frame;                                      
-    GLuint p;                                            
-    GLint u_gain, u_fogon, u_survey, u_invp, u_vp, u_dr, u_fogp, u_hgt;
-    unsigned lights, windows;                            
-    int light;                                           
+    int ready;
+    unsigned frame;
+    GLuint p;
+    GLint u_gain, u_fogon, u_invp, u_vp, u_dr, u_fogp, u_hgt;
+    unsigned lights, windows;
+    int light;
     DWORD next_log;
     void(APIENTRY *BlendFunci)(GLuint, GLenum, GLenum);
     void(APIENTRY *Enablei)(GLenum, GLuint);
@@ -212,24 +204,6 @@ void bg_clear(GLbitfield m);
 void bg_single(void);
 void live_sync(void);
 
-/* survey_fog.c */
-void fog_survey(GLenum mode, GLsizei count, int ff, void *caller);
-void sea_survey(GLsizei count, GLenum type, const void *idx, GLint first, int ff, void *caller);
-
-/* survey_bloom.c */
-void bs_tint(int cls, const GLfloat *rgb, int elems, GLenum mode, GLint first, GLsizei count, GLenum type,
-                    const void *idx);
-void bloom_survey(int elems, GLenum mode, GLint first, GLsizei count, GLenum type, const void *idx, int shaded,
-                         void *caller);
-#define LS_CHAIN 8
-int game_calls(const uint32_t *sp, uint32_t *out, int max);
-void light_survey(int elems, GLenum mode, GLint first, GLsizei count, GLenum type, const void *idx);
-
-/* survey_vehicle.c */
-void vehicle_survey(int elems, GLenum mode, GLint first, GLsizei count, GLenum type, const void *idx,
-                           void *caller);
-void sea_beyond(GLsizei count, GLenum type, const void *idx);
-
 /* water_reflections.c */
 extern float g_ssr_strength;
 int ssr_frame(void);
@@ -237,7 +211,7 @@ int sea_mark_begin(GLsizei count, GLenum type, const void *idx);
 void sea_mark_end(int on);
 typedef struct {
     GLuint p;
-    GLuint fbo_scene, t_scene, fbo_depth, t_depth;       
+    GLuint fbo_scene, t_scene, fbo_depth, t_depth;
     int w, h, bad;
 } ssr_t;
 extern ssr_t ssr;

@@ -1,5 +1,5 @@
-/* What the host needs to know about this game; copy this folder to games\<yourgame> and fill it in.  Shared by C and
-   the .S reservation.  tools\genlow.py makes the low-range patch table for the binary.
+/* layout.h -- what the host needs to know about this game; copy this folder to games\<yourgame> and fill it in.
+   Shared by C and the .S reservation.  tools\genlow.py makes the low-range patch table for the binary.
 
    The game must be a non-PIE i386 Mach-O: it runs at its own addresses.  The exe is based at 0x10000 and its first
    section covers the game's range, so nothing else can be mapped there.  The code below LOW_END runs from a copy at

@@ -1,3 +1,4 @@
+/* image.c -- puts the game image at its own addresses and runs the low range from its copy (see image.h). */
 #include <stdio.h>
 #include <string.h>
 

@@ -1,11 +1,6 @@
 /* tutorial_keys.c -- TUTORIAL_KEYS: popups with PC keys */
 #include "compat.h"
-#include <float.h>
-#include <math.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "layout.h"
 #include "log.h"

@@ -1,11 +1,8 @@
 /* fog_hybrid.c -- FOG_MODE 2: the hybrid fog */
 #include <math.h>
-#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include "compat.h"
-#include <xmmintrin.h>
 #include <GL/gl.h>
 
 #include "layout.h"
@@ -32,7 +29,7 @@
      edges), so the world ends on the circle where the skyline's foot stands.
    The shader follows from the units on and their environments (g_te): plain colour, unit 0 MODULATE,
    or unit 0 MODULATE plus unit 1 COMBINE adding its colour and multiplying its alpha (lit windows and
-   reflections), which is all FOG_SURVEY found.  Any other setup keeps the linear fog, logged once. */
+   reflections), which is all a survey of the world's draws found (2026-10).  Any other setup keeps the linear fog, logged once. */
 
 const char fh_fs_head[] =
     "#version 120\n"

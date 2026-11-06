@@ -1,9 +1,6 @@
 /* density.c -- TRAFFIC_DENSITY, PEDESTRIAN_DENSITY and PARKED_CAR_DENSITY */
 #include "compat.h"
-#include <float.h>
-#include <math.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -83,11 +80,13 @@ const pd_kinds_t pd_kinds[3] = {
 double pd_scale[3] = {1, 1, 1};      /* in force now: the ini's, or 1 during a race */
 double pd_user[3] = {1, 1, 1};       /* the ini's */
 int pd_on, pd_racing;
-#if GMV_DEV
-int sv_on;                       /* SPAWN_SURVEY */
-#else
-#endif
 #define PD_RACE_MGR  0x00689e98u   /* the race's owner (0xf2ed0); the race is at +8 */
+
+/* A word of the game's memory, 0 if it cannot be read. */
+static uint32_t pd_rd(uint32_t a)
+{
+    return (a > 0x1000 && !IsBadReadPtr((void *)(uintptr_t)a, 4)) ? *(const uint32_t *)(uintptr_t)a : 0;
+}
 
 static int pd_race_on(void)
 {
@@ -170,25 +169,16 @@ static void gmv_spawn_centres(uint32_t arg)
     pd_set_band(s);
 }
 
-/* The spawner, for SPAWN_SURVEY (counts only the spawns that took an object from the pool: the
-   spawner adds 1 to counts[kind]) and SPAWN_FADE (fades in what it took from the pool) */
+/* The spawner, for SPAWN_FADE (fades in what it took from the pool) */
 int sf_hooked;
 __attribute__((cdecl, force_align_arg_pointer, noinline))
 int gmv_spawn_make(uint32_t sp, uint32_t loc)
 {
-    int kind = *(const int *)(uintptr_t)(sp + 0x28);
-    const int *cnt = sv_on ? (const int *)(uintptr_t)sv_rd(sv_rd(SV_WORLD) + 0x414) : NULL;
-    int was = cnt && kind >= 0 && kind < 32 ? cnt[kind] : 0;
     if (sf_hooked)
         sf_before_make();
     int r = ((int (*)(uint32_t, uint32_t))(uintptr_t)PD_MAKE_FN)(sp, loc);
     if (sf_hooked)
         sf_after_make();
-    if (!sv_on)
-        return r;
-    int cat = (int)sv_rd(sv_rd(SV_TABLE + 4 * *(const uint8_t *)(uintptr_t)(sp + 0x2c)));
-    if (cnt && kind >= 0 && kind < 32 && cnt[kind] > was && cat >= 0 && cat < 32)
-        sv.made[cat]++;
     return r;
 }
 
@@ -261,7 +251,7 @@ static void pd_built_read(void)
    slots; how many went in. */
 static int pd_pool_add_more(const int *made, const int *have, const uint32_t *vt, int *full)
 {
-    uint32_t world = sv_rd(SV_WORLD);
+    uint32_t world = pd_rd(SV_WORLD);
     int slot = 0, added = 0;
     for (int t = 0; t < 256 && slot < PD_POOL_N; t++)
         for (int extra = (int)(made[t] * pd_pool_scale(vt[t]) + 0.5) - made[t] - have[t]; extra > 0; extra--) {
@@ -279,7 +269,7 @@ static int pd_pool_add_more(const int *made, const int *have, const uint32_t *vt
             if (*res)
                 ((void (*)(uint32_t))(uintptr_t)PD_FREE_FN)(*res);
             *res = 0;
-            ((void (*)(uint32_t))(uintptr_t)sv_rd(sv_rd(o) + 0xb4))(o);
+            ((void (*)(uint32_t))(uintptr_t)pd_rd(pd_rd(o) + 0xb4))(o);
             pd_pool[slot] = o, pd_extra[pd_extra_n++] = o, added++;
         }
     *full = slot == PD_POOL_N;
@@ -307,7 +297,7 @@ static void gmv_pool_build(void)
             int t = ((int (*)(uint32_t))(uintptr_t)PD_TYPE_FN)(pd_pool[i]);
             n++;
             if (t >= 0 && t < 256)
-                made[t]++, vt[t] = sv_rd(pd_pool[i]);
+                made[t]++, vt[t] = pd_rd(pd_pool[i]);
         }
     int full = 0;
     added = pd_pool_add(made, vt, &full);
@@ -327,7 +317,7 @@ int pd_is_extra(uint32_t o)
 int pd_object_known(uint32_t o)
 {
     static const uint32_t lists[3] = {0x418, 0x424, 0x430};
-    uint32_t world = sv_rd(SV_WORLD);
+    uint32_t world = pd_rd(SV_WORLD);
     for (int l = 0; world && l < 3; l++) {
         uint32_t x = *(const uint32_t *)(uintptr_t)(world + lists[l] + 4);
         for (int i = 0; x && i < 8192; i++, x = *(const uint32_t *)(uintptr_t)(x + 0xc))
@@ -348,17 +338,17 @@ int pd_object_known(uint32_t o)
 void cr_cars_off_sixth(void)
 {
     static const uint32_t lists[3] = {0x418, 0x424, 0x430};
-    uint32_t world = sv_rd(SV_WORLD);
+    uint32_t world = pd_rd(SV_WORLD);
     const uint32_t *pool = pd_pool_on ? pd_pool : (const uint32_t *)(uintptr_t)PD_POOL_OLD;
     int n = pd_pool_on ? PD_POOL_N : 0x100;
     char (*is_vehicle)(uint32_t) = (char (*)(uint32_t))(uintptr_t)0x00020c6au;
     for (int i = 0; i < n; i++)
-        if (pool[i] && is_vehicle(pool[i]) && (int)sv_rd(pool[i] + 0xc8) >= CR_GAME_STATIONS)
+        if (pool[i] && is_vehicle(pool[i]) && (int)pd_rd(pool[i] + 0xc8) >= CR_GAME_STATIONS)
             *(int *)(uintptr_t)(pool[i] + 0xc8) = 0;
     for (int l = 0; world && l < 3; l++) {
         uint32_t o = *(const uint32_t *)(uintptr_t)(world + lists[l] + 4);
         for (int i = 0; o && i < 8192; i++, o = *(const uint32_t *)(uintptr_t)(o + 0xc))
-            if (is_vehicle(o) && (int)sv_rd(o + 0xc8) >= CR_GAME_STATIONS)
+            if (is_vehicle(o) && (int)pd_rd(o + 0xc8) >= CR_GAME_STATIONS)
                 *(int *)(uintptr_t)(o + 0xc8) = 0;
     }
 }
@@ -370,7 +360,7 @@ void pd_pool_top_up(void)
 {
     static const uint32_t lists[3] = {0x418, 0x424, 0x430};
     int made[256] = {0}, have[256] = {0}, full = 0;
-    uint32_t vt[256] = {0}, world = sv_rd(SV_WORLD);
+    uint32_t vt[256] = {0}, world = pd_rd(SV_WORLD);
     pd_built_read();
     pd_trim = 0;
     if (!world || !pd_pool_on)
@@ -388,7 +378,7 @@ void pd_pool_top_up(void)
                     if (pd_is_extra(o))
                         have[t]++;
                     else
-                        made[t]++, vt[t] = sv_rd(o);
+                        made[t]++, vt[t] = pd_rd(o);
                 }
             }
             if (l != 3)
@@ -430,7 +420,7 @@ void pd_ws_left(uint32_t ch)
     for (int i = 0; i < pd_left_n; i++)
         if (pd_left[i] == ch) {
             gmv_log("[pool] copy %08x was let go but is walking: vtable %08x, +4 %08x, the world's or a pool's %d\n",
-                    ch, sv_rd(ch), sv_rd(ch + 4), pd_object_known(ch));
+                    ch, pd_rd(ch), pd_rd(ch + 4), pd_object_known(ch));
             pd_left[i] = pd_left[--pd_left_n];          /* once for each */
             return;
         }
@@ -444,7 +434,7 @@ void pd_ws_report(uint32_t ch, uint32_t vt_was)
     MEMORY_BASIC_INFORMATION mbi;
     if (VirtualQuery((const void *)(uintptr_t)(ch + 0x514), &mbi, sizeof mbi) && mbi.State == MEM_COMMIT)
         return;
-    uint32_t world = sv_rd(SV_WORLD);
+    uint32_t world = pd_rd(SV_WORLD);
     int in_list = -1, in_pool = 0, in_old = 0;
     for (int l = 0; world && l < 3 && in_list < 0; l++) {
         uint32_t o = *(const uint32_t *)(uintptr_t)(world + lists[l] + 4);
@@ -458,7 +448,7 @@ void pd_ws_report(uint32_t ch, uint32_t vt_was)
         in_old |= ((const uint32_t *)(uintptr_t)PD_POOL_OLD)[i] == ch;
     gmv_log("[pool] walker %08x gone during its ray: vtable was %08x, now %08x; in the world's list %d, our pool %d, "
             "the Mac's pool %d, one of our copies now %d\n",
-            ch, vt_was, sv_rd(ch), in_list, in_pool, in_old, pd_is_extra(ch));
+            ch, vt_was, pd_rd(ch), in_list, in_pool, in_old, pd_is_extra(ch));
 }
 #endif
 
@@ -483,12 +473,12 @@ void gmv_pool_tick(void)
     }
 #if GMV_DEV
     /* How many cars and people the city has, read only: no hook, so it says the same with or without
-       ORIGINAL_MAC_EXPERIENCE (the Mac's by SPAWN_SURVEY, 2026-10-27: traffic 15-17, people and drivers
+       ORIGINAL_MAC_EXPERIENCE (the Mac's, by a spawn survey on 2026-10-27: traffic 15-17, people and drivers
        31-33, parked 10-11). */
     static int peak[3];
     static DWORD next;
     static const int kind[3] = {3, 8, 17};
-    const int *cnt = (const int *)(uintptr_t)sv_rd(sv_rd(SV_WORLD) + 0x414);
+    const int *cnt = (const int *)(uintptr_t)pd_rd(pd_rd(SV_WORLD) + 0x414);
     if (!cnt)
         return;
     for (int k = 0; k < 3; k++)
@@ -503,7 +493,7 @@ void gmv_pool_tick(void)
         if (next && (peak[0] || peak[1] || peak[2]))
             gmv_log("[crowd] last 15 s, most at once: traffic %d, people and drivers %d, parked %d; now in the pool "
                     "%d (of %d slots), our copies %d, night cap %s\n", peak[0], peak[1], peak[2], free_n, n, pd_extra_n,
-                    sv_rd(0x0068a104u) == 3 ? "on" : "off");
+                    pd_rd(0x0068a104u) == 3 ? "on" : "off");
         peak[0] = peak[1] = peak[2] = 0;
         next = now + 15000;
     }
@@ -548,7 +538,7 @@ int gmv_can_spawn(uint32_t sp)
             k = i;
     if (pd_centres_on)
         pd_set_band(k >= 0 ? pd_scale[k] : 1);
-    int *prof = (int *)(uintptr_t)sv_rd(0x0063dfbcu);
+    int *prof = (int *)(uintptr_t)pd_rd(0x0063dfbcu);
     if (pd_on && k >= 0 && prof) {
         int *own = (int *)(uintptr_t)(sp + 0x74), day = own[0], night = own[1];
         int *pc = (int *)((char *)prof + pd_kinds[k].prof), pv = *pc;
@@ -557,8 +547,6 @@ int gmv_can_spawn(uint32_t sp)
         own[0] = day, own[1] = night, *pc = pv;
     } else
         r = ((int (*)(uint32_t))(uintptr_t)SV_FN)(sp);
-    if (sv_on)
-        sv_note(sp, r);
     return r;
 }
 
@@ -622,25 +610,16 @@ static void apply_population_density(void)
             pd_pool_on ? "; spawn pool moved to make room" : "", keep ? "; taken away farther out to match" : "");
 }
 
-/* The spawn check's hook, for SPAWN_SURVEY and the densities. */
+/* The spawn check's hook, for the densities. */
 void apply_spawn_hook(void)
 {
-#if GMV_DEV
-    const char *e = gmv_dbgenv("GMV_SPAWN_SURVEY");
-    sv_on = e && atoi(e) > 0;
-#endif
     apply_population_density();
-    if (!sv_on && !pd_on)
+    if (!pd_on)
         return;
     if (!sm_is_call(SV_SITE, SV_FN) && !sm_is_call(SV_SITE, (uint32_t)(uintptr_t)gmv_can_spawn)) {
         gmv_log("[gamepatch] spawn check call not the expected bytes; population densities not applied\n");
         return;
     }
     int32_t r = (int32_t)((uint32_t)(uintptr_t)gmv_can_spawn - (SV_SITE + 5));
-    if (patch_bytes(SV_SITE + 1, (const unsigned char *)&r, 4) && sv_on)
-        gmv_log("[spawnsurvey] SPAWN_SURVEY=1: logging each spawn point once and the world's counts every 15 s\n");
-    if (sv_on && sm_is_call(PD_MAKE_SITE, PD_MAKE_FN)) {
-        r = (int32_t)((uint32_t)(uintptr_t)gmv_spawn_make - (PD_MAKE_SITE + 5));
-        patch_bytes(PD_MAKE_SITE + 1, (const unsigned char *)&r, 4);
-    }
+    patch_bytes(SV_SITE + 1, (const unsigned char *)&r, 4);
 }

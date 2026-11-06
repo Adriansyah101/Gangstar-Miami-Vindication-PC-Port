@@ -16,7 +16,6 @@
 #define _WIN32_WINNT 0x0600             /* SRWLOCK and CONDITION_VARIABLE */
 #endif
 
-#include <stdint.h>
 #include <stdlib.h>
 #include "compat.h"
 

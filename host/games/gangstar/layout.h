@@ -1,6 +1,6 @@
-/* What the host needs to know about this game: the fixed address-space layout of GangstarMV.exe, shared by C
-   and the .S reservation, and the game's names.  Linux keeps the same layout, mapped when the program starts
-   (platform_linux.c), so gmv_patch.bin is the same there; GMV_EXE_BASE is Windows' only.
+/* layout.h -- what the host needs to know about this game: the fixed address-space layout of GangstarMV.exe,
+   shared by C and the .S reservation, and the game's names.  Linux keeps the same layout, mapped when the program
+   starts (platform_linux.c), so gmv_patch.bin is the same there; GMV_EXE_BASE is Windows' only.
 
    The game is a non-PIE i386 Mach-O linked at 0x1000 and has no rebase info, so it runs at
    its own addresses.  The exe is based at 0x10000 (the lowest address Windows allows) and

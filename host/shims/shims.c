@@ -20,7 +20,6 @@
 
 #include <ctype.h>
 #include <emmintrin.h>
-#include <errno.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stddef.h>

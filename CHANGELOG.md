@@ -183,6 +183,11 @@ detail. The older record, by version, is in [`CHANGELOG_old.md`](CHANGELOG_old.m
 - **`SWITCH_SAVE_FIX`.** A save made while playing as Betty no longer gives her things to Johnny.
 - **Origin collision.** Buildings near the map's centre have collision as soon as a level starts. This fix applies only
   with `DRAW_DISTANCE` above 1.
+- **`MISSION_SAVE_FIX`** (2026-11-06; unlike the others, it stays on under `ORIGINAL_MAC_EXPERIENCE`). The original
+  save writes only 7 of the 8 groups of mission flags, so Reginald's five missions read as not done after every load.
+  The save now keeps all 8, and the file still loads in the original game. It stays on under the preset so that a save
+  made there keeps them, and MISSION REPLAY still offers them once the preset is off. MISSION REPLAY's SIDE list now
+  includes Reginald's missions.
 
 ### Loading (on by default and under `ORIGINAL_MAC_EXPERIENCE`)
 
@@ -224,7 +229,8 @@ detail. The older record, by version, is in [`CHANGELOG_old.md`](CHANGELOG_old.m
 - **`WATER_REFLECTIONS`.** The sea reflects the city and the sky, from what is on screen. Tuned by
   `REFLECTION_STRENGTH`.
 - **`VEHICLE_REFLECTIONS`.** Shiny cars reflect the street, the buildings and the other cars, while matte cars stay
-  matte. Tuned by `VEHICLE_REFLECTION_STRENGTH`.
+  matte. Tuned by `VEHICLE_REFLECTION_STRENGTH`. Where the screen-space ray finds nothing, as on roofs and trunks, the
+  screen itself is used as a sphere map, looked up by the reflected direction (2026-11-06).
 - **`DYNAMIC_SHADOWS`.** Vehicles and people cast shadows that follow the sun and the moon. At dusk and dawn a soft
   shadow stays under them.
 - **`SUN_MOON`.** The iPhone version's sun and moon, with their glow, restored from the code and textures still in the

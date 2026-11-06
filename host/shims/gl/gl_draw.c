@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "compat.h"
-#include <xmmintrin.h>
 #include <GL/gl.h>
 
 #include "layout.h"
@@ -155,7 +154,6 @@ void texfix_end(unsigned m)
         if (m & (1u << u)) { act(0x84C0 + u); glEnable(GL_TEXTURE_2D); }
     act(0x84C0 + g_tf_active);
 }
-
 
 static void tr_DrawArrays(GLenum mode, GLint first, GLsizei count)
 {

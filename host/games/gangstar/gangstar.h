@@ -15,8 +15,6 @@ const float *gmv_ds_caster(void);   /* the node being drawn's absolute transform
 /* vtable of the game state on top of the state stack, 0 if none (0x659f28 = main menu). */
 uint32_t gmv_top_state_vtable(void);
 void gmv_death_poll(void);
-/* Diagnostic (MISSION_SURVEY), the patches: logs the mission records and their save flags; once per present. */
-void gmv_mission_poll(void);
 void gmv_mission_replay_tick(void);   /* MISSION_REPLAY: a replay's start, end and restore */
 void gmv_playerswitch_inventory_tick(void);   /* PLAYERSWITCH_INVENTORY: Betty shares Johnny's cash and weapons */
 /* SPAWN_FADE (the patches): for the draw about to be made, how many 64ths of it to show (64 = all,
@@ -56,6 +54,7 @@ void gmv_pool_tick(void);
 /* Test aid (GMV_MENU_LOOP_SCENE), the patches: restarts the looped menu scene and keeps the
    follow camera on its walker; called once per present. */
 void gmv_menu_loop_tick(void);
+void gmv_test_spawn_car_tick(void);     /* GMV_TEST_SPAWN_CAR test aid (dev build) */
 
 /* broadphase.c: the faster, result-identical Box2D area query behind b2World::Query (a port
    performance fix, installed by gmv_apply_gamepatch), and its PERF_PROFILE line. */
@@ -77,16 +76,6 @@ void gmv_bbfast_report(double seconds);
    performance fix, installed by gmv_apply_gamepatch), and its PERF_PROFILE line. */
 void gmv_apply_hudbars(void);
 void gmv_hudbars_report(double seconds);
-
-/* glstream.c: VBO_STREAM, the game's client-array draws fed from stream buffer objects (same picture;
-   a port performance fix).  the GL shim's draw and client-state wrappers call in; PERF_PROFILE line. */
-int gmv_gls_want(void);
-void *gmv_gls_intercept(const char *name);
-void gmv_gls_client_unit(unsigned unit);
-void gmv_gls_client_state(unsigned array, int on);
-void gmv_gls_draw(void *real, int elems, unsigned mode, int first, int count, unsigned type, const void *idx,
-                  int allow);
-void gmv_glstream_report(double seconds);
 
 /* vbostatic.c: STATIC_VBO, the game's unchanging vertex/index buffers kept in GL buffer objects
    (GL_STATIC_DRAW); dev: their counts by creating site (PERF_PROFILE). */

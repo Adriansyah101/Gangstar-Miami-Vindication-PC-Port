@@ -1,6 +1,5 @@
 /* tab.c -- GAMEPATCH_TAB: the port's settings as a tab of the options menu */
 #include "compat.h"
-#include <float.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>

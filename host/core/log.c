@@ -1,3 +1,4 @@
+/* log.c -- the log file (cache\<game>.log), the folders it hides, and the fatal-error box (see log.h). */
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>

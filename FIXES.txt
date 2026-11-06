@@ -1,4 +1,4 @@
-GangstarMV PC Port V1.0.0 - what has been fixed and added (as of 2026-11-05)
+GangstarMV PC Port V1.0.1 - what has been fixed and added (as of 2026-11-06)
 ================================================================
 
 Every item below is a key in GangstarMV.ini. The fixes are on by default, and setting one to 0
@@ -113,6 +113,7 @@ VANILLA BUGS (the Mac game does the same; changed at the user's request)
 
 The first five below are off with ORIGINAL_MAC_EXPERIENCE=1 (MENUFLASH_FIX to RADIO_LOGO_FIX, and
 SWITCH_SAVE_FIX). LOAD_SLEEP_SKIP, LOAD_BUDGET and FAST_LOAD stay on with it: same result, sooner.
+MISSION_SAVE_FIX stays on with it too, so a save made there keeps Reginald's missions.
 
 MENUFLASH_FIX     Two frames of raw 3D background (a building wall, no menu) flash between the
                   title and the main menu. The title now stays up until the menu's fade from black
@@ -158,6 +159,12 @@ SWITCH_SAVE_FIX   A save made in free roam while you play as Betty gave her cash
                   and weapons to Johnny when it was loaded. The save now keeps Johnny's; you still
                   start where you saved. Also on the GAMEPATCH tab (FIXES: PLAYERSWITCH SAVE FIX).
                   (notes item 23)
+
+MISSION_SAVE_FIX  Every save forgot Reginald's five missions: the game keeps its mission flags in 8
+                  groups but its save writes only 7, so his read as not done after any load. The
+                  save now keeps all 8, and still loads in the original game. Stays on with the Mac
+                  preset, so MISSION REPLAY still offers his missions once the preset is off.
+                  (2026-11-06, found when the user asked to have them marked done; notes item 34)
 
 Origin collision  When a level starts, the buildings within about 225 m of the map's centre have
 (no key)          no collision until you move away and come back (the city grid's starting
@@ -219,9 +226,12 @@ WATER_REFLECTIONS=1    The sea reflects the city and the sky. Only what is on sc
                        GAMEPATCH tab (WATER REFLECTIONS).
 
 VEHICLE_REFLECTIONS=1  The shiny cars reflect the street, the buildings and the other cars, again
-                       only what is on screen; elsewhere the game's own shine stays. Matte cars
-                       stay matte. VEHICLE_REFLECTION_STRENGTH (default 2.0) tunes it. Also on the
-                       GAMEPATCH tab (CAR REFLECTIONS).
+                       from what is on screen. Where nothing on screen lies along the reflection,
+                       as on roofs and trunks seen from above, the screen itself is used as a
+                       sphere map, looked up by the reflected direction, so those parts no longer
+                       look bare.
+                       Matte cars stay matte. VEHICLE_REFLECTION_STRENGTH (default 2.0) tunes it.
+                       Also on the GAMEPATCH tab (CAR REFLECTIONS).
 
 DYNAMIC_SHADOWS=1      Vehicles and people cast shadows that follow the sun and the moon, in place
                        of the fixed one under each. When neither is up, around dusk and dawn, a soft

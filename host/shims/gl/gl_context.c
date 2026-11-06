@@ -1,11 +1,7 @@
 /* gl_context.c -- the window, the GL context and the sizes the game sees */
-#include <math.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include "compat.h"
-#include <xmmintrin.h>
 #include <GL/gl.h>
 #include <SDL3/SDL.h>
 

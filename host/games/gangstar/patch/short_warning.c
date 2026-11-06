@@ -1,11 +1,6 @@
 /* short_warning.c -- SHORT_WARNING: the start-up warning for 3 s, skippable */
 #include "compat.h"
-#include <float.h>
-#include <math.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "layout.h"
 #include "log.h"

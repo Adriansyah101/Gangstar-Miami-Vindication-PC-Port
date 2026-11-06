@@ -1,11 +1,6 @@
 /* mac_hooks.c -- ORIGINAL_MAC_EXPERIENCE: the hooks that exist only for what it turns off */
 #include "compat.h"
-#include <float.h>
-#include <math.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "layout.h"
 #include "log.h"
@@ -74,10 +69,6 @@ void mac_hooks_out(void)
         patch_undo_all(&pd_undo);
         pd_on = pd_centres_on = pd_pool_on = pd_racing = sf_hooked = sf_live = sf_n = 0;
         pd_trim_gen = pd_world_gen;
-        if (sv_on) {                        /* SPAWN_SURVEY stays */
-            sm_redirect(SV_SITE, (void *)gmv_can_spawn);
-            sm_redirect(PD_MAKE_SITE, (void *)gmv_spawn_make);
-        }
         gmv_log("[gamepatch] density and SPAWN_FADE hooks out, the spawn pool back in its 256 slots (%d of our "
                 "copies still in the city)\n", pd_extra_n);
     }

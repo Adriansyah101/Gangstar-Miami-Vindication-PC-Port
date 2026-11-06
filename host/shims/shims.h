@@ -1,5 +1,5 @@
-/* Host implementations of the dylib entry points the game imports.  The table is
-   NULL-terminated and consumed by imports_bind (host/imports.c), which matches each
+/* shims.h -- host implementations of the dylib entry points the game imports.  The table is
+   NULL-terminated and consumed by imports_bind (core/imports.c), which matches each
    import's Mach-O symbol name against host_symbol.name. */
 #ifndef GMV_SHIMS_H
 #define GMV_SHIMS_H
@@ -127,14 +127,12 @@ void gmv_prof_tick_start(void);
 #define gmv_prof_tick_start() ((void)0)
 #endif
 
-
 /* the GL shim: frames presented so far */
 unsigned gmv_gl_frame_no(void);
 
 /* Stage 3b: parse the mapped __OBJC segment into the Objective-C class registry.  Call once,
    after the image is mapped and before any objc_msgSend (i.e. before main runs). */
 void gmv_objc_init(const macho *m);
-
 
 /* objc_msgSend itself (shimsobjc.S) and a C helper to allocate an instance by class name, so
    the host can drive the Cocoa bootstrap (stage 3c). */

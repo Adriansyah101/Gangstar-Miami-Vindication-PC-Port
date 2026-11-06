@@ -1,3 +1,4 @@
+/* imports.c -- the game's imports: what each one is, and what its bind slots get pointed at (see imports.h). */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

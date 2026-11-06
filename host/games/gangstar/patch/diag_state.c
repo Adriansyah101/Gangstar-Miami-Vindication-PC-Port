@@ -1,8 +1,6 @@
 /* diag_state.c -- diagnostic (GMV_STATE_TRACE=1): the game's state stack, its render gates and the menu's predicates. */
 #include "compat.h"
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "layout.h"

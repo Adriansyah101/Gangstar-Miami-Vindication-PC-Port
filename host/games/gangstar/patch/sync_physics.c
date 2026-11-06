@@ -1,10 +1,7 @@
 /* sync_physics.c -- PHYSICS_SYNC: one physics step per tick */
 #include "compat.h"
-#include <float.h>
 #include <math.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "layout.h"

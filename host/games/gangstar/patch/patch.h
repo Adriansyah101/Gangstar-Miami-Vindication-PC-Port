@@ -1,4 +1,4 @@
-/* What the game's patches share with each other. */
+/* patch.h -- what the game's patches share with each other. */
 #ifndef GMV_PATCH_H
 #define GMV_PATCH_H
 
@@ -204,6 +204,9 @@ int ssf_set(int on);
 __attribute__((cdecl, force_align_arg_pointer))
 uint32_t gmv_ssf_write(uint32_t save, uint32_t path);
 void apply_switch_save_fix(void);
+/* fix_mission_save.c */
+int msf_set(int on);
+void apply_mission_save_fix(void);
 
 /* switch_inventory.c */
 int si_set(int on);
@@ -299,33 +302,20 @@ extern int dd_unhook;
 void dd_take_out(void);
 void apply_origin_collision_fix(void);
 
-/* diag_spawn.c */
-#define SV_SITE      0x00082af8u   /* call 0x080272 in the spawn point's update */
-#define SV_TABLE     0x006888c0u   /* record pointers by the point's index */
-#define SV_WORLD     0x0068551cu   /* the world (counts at +0x414, lists from +0x418) */
-typedef struct { uint32_t sp[256]; int n; DWORD next; unsigned asks[32], yes[32], made[32]; } sv_t;
-extern sv_t sv;
-uint32_t sv_rd(uint32_t a);
-void sv_note(uint32_t sp, int r);
-
 /* density.c */
-#define PD_MAKE_SITE   0x00082bd1u   /* call 0x082504, the spawner (for SPAWN_SURVEY's count) */
+#define SV_SITE      0x00082af8u   /* call 0x080272 (the spawn check) in the spawn point's update */
+#define SV_WORLD     0x0068551cu   /* the world (counts at +0x414, lists from +0x418) */
+#define PD_MAKE_SITE   0x00082bd1u   /* call 0x082504, the spawner (SPAWN_FADE's hook) */
 #define PD_MAKE_FN     0x00082504u
 typedef struct {
     const char *env;
-    int kind, cap, prof;                 
-    uint32_t cap_imm, rec, d0, d1;       
+    int kind, cap, prof;
+    uint32_t cap_imm, rec, d0, d1;
 } pd_kinds_t;
 extern const pd_kinds_t pd_kinds[3];
 extern double pd_scale[3];
 extern double pd_user[3];
 extern int pd_on, pd_racing;
-#if GMV_DEV
-extern int sv_on;
-#endif
-#if !(GMV_DEV)
-#define sv_on 0
-#endif
 int pd_write(void);
 extern int sf_hooked;
 __attribute__((cdecl, force_align_arg_pointer, noinline))
@@ -370,7 +360,7 @@ void mac_hooks_in(void);
 void mac_hooks_out(void);
 void dd_tables_tick(void);
 
-/* diag_mission.c */
+/* game_read.c */
 #define MS_OWNER     0x00689e98u
 #define MS_STRINGS   0x17ac4       /* app + this: the string table (0x8f426) */
 #define MS_NONE_ID   0x1054
@@ -381,12 +371,11 @@ const char *ms_text(uint32_t id, char *out, size_t n);
    as the MISSIONS page wants a trigger); a command's type is its vtable's +0x1c.  The MISSIONS page
    lists the scripts at a 0x8f (or 0x81) command with a mission id (0x32560: the +0x10 of the first
    0x63, else 0x67, command), and its START (0x180360) finds the 0x8f from there, faces its +0x14 name
-   and sets the manager's +0x85.  Logged in full when the list appears, then each script's moves. */
+   and sets the manager's +0x85. */
 #define MS_SCRIPTS   0x0094f300u
 #define MS_SC_MAX    1024
 #define MS_CMD_MAX   400
 int ms_cmd_type(uint32_t c);
-void apply_mission_survey(void);
 
 /* tab.c */
 #define OM_SET_ENTRY   0x00172f0eu   /* (tab widget, slot, string id, enabled)                    */
@@ -487,16 +476,16 @@ typedef struct {
     uint32_t sc, mgr, list;
     DWORD t;
     uint32_t vars[MR_VARS], flags[8], tries;
-    uint32_t mission_sc;                      
-    unsigned char tutorial;                   
-    int cine;                                 
-    uint32_t player;                          
+    uint32_t mission_sc;
+    unsigned char tutorial;
+    int cine;
+    uint32_t player;
     unsigned char pos[MR_POS_BYTES];
-    int no;                                   
+    int no;
     uint32_t o_name[MR_OBJS], o_obj[MR_OBJS];
-    uint16_t o_flags[MR_OBJS];                
-    unsigned char o_seen[MR_OBJS];            
-    DWORD watch;                              
+    uint16_t o_flags[MR_OBJS];
+    unsigned char o_seen[MR_OBJS];
+    DWORD watch;
     uint32_t s_sc[MS_SC_MAX], s_time[MS_SC_MAX];
     int s_st[MS_SC_MAX], s_pc[MS_SC_MAX];
 } rp_t;
@@ -526,7 +515,7 @@ extern patch_undo uc_undo;
 typedef struct { float pos[3], ang; uint32_t cell, tri; int have; } uc_spot_t;
 extern const uc_spot_t uc_beach;
 typedef struct {
-    uc_spot_t spot, cand;             
+    uc_spot_t spot, cand;
     uint32_t obj, mgr, list, last_veh, survey_car;
     DWORD t;
     int said;

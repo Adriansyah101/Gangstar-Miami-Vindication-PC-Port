@@ -1,11 +1,6 @@
 /* gl_window.c -- the GL window, its context and the frame pacer's settings */
-#include <math.h>
-#include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "compat.h"
-#include <xmmintrin.h>
 #include <GL/gl.h>
 #include <SDL3/SDL.h>
 
@@ -26,8 +21,6 @@
    stdcall; those are bound separately (cdecl->stdcall trampolines) -- this file only stands up
    the drawable + context.  Host code here calls opengl32 directly with correct decls, so no ABI
    issue for us. */
-
-
 
 #ifndef GL_BGR_EXT
 #endif

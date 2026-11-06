@@ -1,5 +1,24 @@
 # Changelog
 
+## PC Port V1.0.1 (2026-11-06)
+
+### Fixed
+
+- **`MISSION_SAVE_FIX`** (on by default, and under `ORIGINAL_MAC_EXPERIENCE` too): the original game keeps its mission
+  flags in 8 groups, but its save writes only 7, so Reginald's five missions read as not done after every load. The
+  save now keeps all 8, and the file still loads in the original game. It stays on under the preset so that a save
+  made there keeps them, and MISSION REPLAY still offers them once the preset is off. Found on 2026-11-06, when the
+  user asked to have those missions marked done in their save. MISSION REPLAY's SIDE list now includes them.
+
+### Changed
+
+- **`VEHICLE_REFLECTIONS`:** where the screen-space ray finds nothing, as on roofs and trunks seen from above, the
+  screen itself is used as a sphere map, looked up by the reflected direction, so those parts no longer look bare.
+- **Source:** the finished dev-only surveys (`BLOOM_SURVEY`, `FOG_SURVEY`, `VEHICLE_SURVEY`, `MISSION_SURVEY`,
+  `SPAWN_SURVEY`) and the `VBO_STREAM` experiment are gone, and unused includes were removed. Nothing changes in
+  play. An old ini's lines for them are noted in the log as unknown and ignored. Dev builds gained `TEST_SPAWN_CAR`,
+  which puts the player at the wheel of a car of the named type, for looking at the reflections up close.
+
 ## PC Port V1.0.0 (2026-11-05)
 
 The Windows Port became the PC Port: the same source now builds for Windows and Linux.

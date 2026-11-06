@@ -106,8 +106,8 @@ emulation, but the port has not been tried there.
 
    | System | File |
    |---|---|
-   | Windows | `GangstarMV-PC-Port-V1.0.0-Windows.zip` |
-   | Linux | `GangstarMV-PC-Port-V1.0.0-Linux.tar.gz` |
+   | Windows | `GangstarMV-PC-Port-V1.0.1-Windows-x86.zip` |
+   | Linux | `GangstarMV-PC-Port-V1.0.1-Linux-x86.tar.gz` |
 
    Each also comes as `-noicon`, with no game icon, and as `-dev`, for people working on the port.
 
@@ -143,6 +143,11 @@ the sixth station.
 
 **Add-ons:** the `add-on` folder is for two optional extras that you make from your own copies of other versions
 of the game. None is included, and the game plays the same without them. The note in that folder explains them.
+
+<p align="center">
+  <img src="art/crusher.jpg" alt="The Crusher monster truck on Miami's beach" width="653"><br>
+  <em>The Crusher add-on (<code>UC_CRUSHER</code>) on the beach in the port.</em>
+</p>
 
 ### Updating, backing up and uninstalling
 
@@ -343,6 +348,6 @@ project is laid out, the rules it keeps and how changes are tested.
 This software may be modified and distributed under the terms of the MIT license. See the [`LICENSE`](LICENSE) file
 for details.
 
-The license covers this project's own code and documents. It does not cover the game, the game's icon or the banner
-art, which stay under their owners' terms. SDL3 is under the zlib license, and dr_libs and stb_vorbis carry their own
+The license covers this project's own code and documents. It does not cover the game, the game's icon, the banner
+art or the in-game screenshot, which stay under their owners' terms. SDL3 is under the zlib license, and dr_libs and stb_vorbis carry their own
 licenses at the end of each file.

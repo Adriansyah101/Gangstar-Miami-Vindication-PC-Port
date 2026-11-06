@@ -1,10 +1,6 @@
 /* patch_common.c -- what the patches share: writing to the game's code, and undoing it */
 #include "compat.h"
-#include <float.h>
-#include <math.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "layout.h"
@@ -19,8 +15,6 @@
    the shipped i386 code that only holds on the original platform, by mirroring logic the engine
    already contains elsewhere.  Each patch sanity-checks the exact bytes it is about to replace,
    so it is a no-op on any binary that does not match, and each can be turned off with an env var. */
-
-
 
 patch_undo *patch_undo_now;     /* the group being put in, if any */
 patch_undo mac_undo;            /* every enhancement's hooks but the ones with groups of their own */

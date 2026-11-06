@@ -56,10 +56,6 @@ gmv_frame.bmp
 # reference, but never commit them. Remove this line only if you intend to publish them.
 /screenshots/
 
-# Old READMEs kept for reference; the old one holds a local path.
-/READMEgmvsuperold.md
-/READMEfastfive.md
-
 # Editor / OS junk
 .vscode/
 .idea/

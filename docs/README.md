@@ -11,7 +11,7 @@ the loader refuses any other.
 
 ## Status
 
-Version **V1.0.0** (2026-11-05). Tested on Windows 11 with an NVIDIA RTX 3050 Ti.
+Version **V1.0.1** (2026-11-06). Tested on Windows 11 with an NVIDIA RTX 3050 Ti.
 [`CHANGELOG.md`](../CHANGELOG.md) lists everything the port does, by part: the loader, the macOS wrapper and the game layer.
 
 | Area | State |

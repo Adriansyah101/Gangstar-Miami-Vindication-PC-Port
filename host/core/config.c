@@ -1,4 +1,4 @@
-/* GangstarMV.ini -- the host's settings file, in savegame\ next to the exe (older builds kept it
+/* config.c -- GangstarMV.ini, the host's settings file, in savegame\ next to the exe (older builds kept it
    beside the exe; gmv_config_load moves it into savegame\ the first time).
 
    Every setting is one of the GMV_* switches the host used to read only from the environment.
@@ -19,7 +19,6 @@
    threads can call gmv_getenv freely.  gmv_config_save (the GAMEPATCH options tab) rewrites one
    key's line in the file without changing what gmv_getenv answers; gmv_config_file_value reads
    what the file holds now. */
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

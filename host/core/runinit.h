@@ -1,4 +1,4 @@
-/* Stage 2d: run the game's C++ static initializers (the __mod_init_func table). */
+/* runinit.h -- stage 2d: run the game's C++ static initializers (the __mod_init_func table). */
 #ifndef GMV_RUNINIT_H
 #define GMV_RUNINIT_H
 

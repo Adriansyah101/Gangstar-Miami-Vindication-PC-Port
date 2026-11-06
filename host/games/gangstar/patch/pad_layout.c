@@ -1,10 +1,8 @@
 /* pad_layout.c -- PAD_LAYOUT: a GTA V-like gamepad layout */
 #include "compat.h"
-#include <float.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "layout.h"

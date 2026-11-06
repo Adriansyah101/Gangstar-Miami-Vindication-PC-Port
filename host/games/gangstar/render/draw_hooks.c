@@ -1,7 +1,4 @@
 /* draw_hooks.c -- what Gangstar's effects do around each draw, and how the GL shim reaches them (game.h). */
-#include <math.h>
-#include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "compat.h"
@@ -17,11 +14,6 @@
 int g_ssr_want, g_ssr = 1;                       /* WATER_REFLECTIONS; 0 once its setup failed */
 int g_vr_want, g_vr = 1;                         /* VEHICLE_REFLECTIONS; 0 once its setup failed */
 int g_ds_want, g_ds = 1;                         /* DYNAMIC_SHADOWS; 0 once its setup failed */
-#if GMV_DEV
-int g_fog_survey;                                /* FOG_SURVEY */
-int g_bloom_survey;                              /* BLOOM_SURVEY (1 tints, 2 shows the glow layer, 3 also its windows' test, 4 logs the lights) */
-int g_veh_survey;                                /* VEHICLE_SURVEY */
-#endif
 
 static int fog_track, sf_want;
 
@@ -117,26 +109,8 @@ void gmv_game_gl_setup(void)
     g_vr_debug = vrd_on && *vrd_on && *vrd_on != '0';
     if (g_vr_debug)
         gmv_log("[vr] VEHICLE_REFLECTION_DEBUG=1: the cars' pixels tinted by what became of them (red covered, grey "
-                "fogged, blue edge-on, magenta normal turned round, yellow ray missed, green hit, cyan hit past "
+                "fogged, blue edge-on, magenta normal turned round, yellow ray missed (screen sphere map), green hit, cyan hit past "
                 "the car itself)%s\n", g_vr_want ? "" : "; VEHICLE_REFLECTIONS is off at startup");
-    const char *bsv_on = gmv_dbgenv("GMV_BLOOM_SURVEY");
-    g_bloom_survey = g_bloom_want && bsv_on && *bsv_on ? atoi(bsv_on) : 0;
-    if (g_bloom_survey == 1)
-        gmv_log("[bloomsurvey] BLOOM_SURVEY=1: tinting and logging the draws that could be lights\n");
-    else if (g_bloom_survey == 2)
-        gmv_log("[bloomsurvey] BLOOM_SURVEY=2: showing only the glow layer (BLOOM_LIGHTS, BLOOM_WINDOWS)\n");
-    else if (g_bloom_survey == 3)
-        gmv_log("[bloomsurvey] BLOOM_SURVEY=3: the glow layer with the windows' pass at any hour, its walls dim and the "
-                "texels taken for lit windows magenta; its textures logged, the night atlases saved to bloomtex\\\n");
-    else if (g_bloom_survey == 4)
-        gmv_log("[bloomsurvey] BLOOM_SURVEY=4: each kind of light BLOOM_LIGHTS makes glow logged once and tinted "
-                "in its number's colour%s\n", g_bloom_lights > 0 ? "" : " (BLOOM_LIGHTS is off: none)");
-    const char *vsv_on = gmv_dbgenv("GMV_VEHICLE_SURVEY");
-    if (vsv_on && *vsv_on && *vsv_on != '0') {
-        g_veh_survey = g_ssr_want;
-        gmv_log(g_ssr_want ? "[vehsurvey] VEHICLE_SURVEY=1: tinting and logging the draws that make up the cars\n"
-                           : "[vehsurvey] VEHICLE_SURVEY needs WATER_REFLECTIONS=1 at startup; off\n");
-    }
 #endif
     const char *sfw = gmv_getenv("GMV_SPAWN_FADE");     /* the draw wrappers apply its dot pattern */
     sf_want = sfw && *sfw && *sfw != '0';
@@ -146,23 +120,16 @@ void gmv_game_gl_setup(void)
     if (fh_h && *fh_h && atof(fh_h) >= 0) g_fog_height = (float)atof(fh_h) * 100;
     if (g_fog_mode == 2)
         gmv_log("[fog] FOG_MODE=2: the hybrid fog, thinning with height over %g m\n", g_fog_height / 100);
-#if GMV_DEV
-    const char *sv = gmv_dbgenv("GMV_FOG_SURVEY");
-    g_fog_survey = sv && *sv ? atoi(sv) : 0;
-    if (g_fog_survey)
-        gmv_log("[fogsurvey] FOG_SURVEY=1: logging the fixed-function setups of the world's draws\n");
-#endif
 }
 
 int gmv_game_gl_wants_draws(void)
 {
-    return g_ao_want || g_bloom_want || g_ssr_want || g_vr_want || g_ds_want || g_fog_survey || fog_track || g_tab_live ||
-           sf_want || gmv_gls_want();
+    return g_ao_want || g_bloom_want || g_ssr_want || g_vr_want || g_ds_want || fog_track || g_tab_live || sf_want;
 }
 
 void *gmv_game_gl_intercept(const char *name)
 {
-    if (g_ao_want || g_bloom_want || g_ssr_want || g_vr_want || g_ds_want || fog_track || g_fog_survey || g_tab_live) {
+    if (g_ao_want || g_bloom_want || g_ssr_want || g_vr_want || g_ds_want || fog_track || g_tab_live) {
         void *t = gl_ao_intercept(name);
         if (t)
             return t;
@@ -186,7 +153,8 @@ void *gmv_game_gl_intercept(const char *name)
 
 void *gmv_game_gl_draw_intercept(const char *name)
 {
-    return gmv_gls_intercept(name);                     /* VBO_STREAM's array-state wrappers (glstream.c) */
+    (void)name;
+    return NULL;
 }
 
 void gmv_game_gl_cap(unsigned cap, int on)
@@ -206,12 +174,13 @@ void gmv_game_gl_clear_end(unsigned mask)
 
 void gmv_game_gl_client_unit(unsigned unit)
 {
-    gmv_gls_client_unit(unit);
+    (void)unit;
 }
 
 void gmv_game_gl_client_state(unsigned array, int on)
 {
-    gmv_gls_client_state(array, on);
+    (void)array;
+    (void)on;
 }
 
 void gmv_game_frame_end(void)
@@ -232,13 +201,11 @@ void gmv_game_draw_arrays(void *real, unsigned mode, int first, int count, void 
     int ff = fog_force_begin();
     int cl = fog_clip_begin();
     int fh = fog_hybrid_begin(mode, ff, tf);
-    if (g_fog_survey == 1) fog_survey(mode, count, ff, caller);
-    if (g_fog_survey == 2) sea_survey(count, 0, NULL, first, ff, caller);
     glow_state_t gs;
     if (g_sky_glow_draw) glow_begin(&gs);
     int bg = bg_draw_begin(mode);
     int sfs = sf_stipple_begin();
-    if (real) gmv_gls_draw(real, 0, mode, first, count, 0, NULL, 1);
+    if (real) ((void(APIENTRY *)(GLenum, GLint, GLsizei))real)(mode, first, count);
     if (g_sky_glow_draw) glow_end(&gs);
     if (bg) bg_draw_end(bg, 0, mode, first, count, 0, NULL);
     sf_stipple_end(sfs);
@@ -246,9 +213,6 @@ void gmv_game_draw_arrays(void *real, unsigned mode, int first, int count, void 
     fog_hybrid_end(fh);
     fog_force_end(ff);
     texfix_end(tf);
-    if (g_bloom_survey == 1) bloom_survey(0, mode, first, count, 0, NULL, fh, caller);
-    if (g_bloom_survey == 4) light_survey(0, mode, first, count, 0, NULL);
-    if (g_veh_survey) vehicle_survey(0, mode, first, count, 0, NULL, caller);
 }
 
 void gmv_game_draw_elements(void *real, unsigned mode, int count, unsigned type, const void *idx, void *caller)
@@ -263,14 +227,12 @@ void gmv_game_draw_elements(void *real, unsigned mode, int count, unsigned type,
     int ff = fog_force_begin();
     int cl = fog_clip_begin();
     int fh = fog_hybrid_begin(mode, ff, tf);
-    if (g_fog_survey == 1) fog_survey(mode, count, ff, caller);
-    if (g_fog_survey == 2) sea_survey(count, type, idx, 0, ff, caller);
     glow_state_t gs;
     if (g_sky_glow_draw) glow_begin(&gs);
     int bg = bg_draw_begin(mode);
     int sm = sea_mark_begin(count, type, idx);
     int sfs = sf_stipple_begin();
-    if (real) gmv_gls_draw(real, 1, mode, 0, count, type, idx, !sf);   /* sf: the colours are ours */
+    if (real) ((void(APIENTRY *)(GLenum, GLsizei, GLenum, const void *))real)(mode, count, type, idx);
     if (g_sky_glow_draw) glow_end(&gs);
     if (bg) bg_draw_end(bg, 1, mode, 0, count, type, idx);
     if (sf) sky_floor_end();
@@ -284,7 +246,4 @@ void gmv_game_draw_elements(void *real, unsigned mode, int count, unsigned type,
     if (body == 1 && g_vr_want && g_vr) car_mark(mode, count, type, idx);
     if (dk) ds_mark(dk, mode, count, type, idx);
     sf_stipple_end(sfs);
-    if (g_bloom_survey == 1) bloom_survey(1, mode, 0, count, type, idx, fh, caller);
-    if (g_bloom_survey == 4) light_survey(1, mode, 0, count, type, idx);
-    if (g_veh_survey) vehicle_survey(1, mode, 0, count, type, idx, caller);
 }

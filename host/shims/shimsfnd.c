@@ -1627,4 +1627,3 @@ void *gmv_fnd_instance_method(const char *cls, const char *sel)
             return m->imp;
     return NULL;
 }
-

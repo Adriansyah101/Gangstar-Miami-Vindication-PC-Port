@@ -1,11 +1,7 @@
 /* ao.c -- AMBIENT_OCCLUSION */
 #include <math.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include "compat.h"
-#include <xmmintrin.h>
 #include <GL/gl.h>
 
 #include "layout.h"

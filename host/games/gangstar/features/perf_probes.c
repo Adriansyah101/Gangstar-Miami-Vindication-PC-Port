@@ -1,7 +1,5 @@
 /* perf_probes.c -- PERF_PROFILE (diagnostic only): timing of three of the game's own routines, and the summary. */
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include "compat.h"
 
@@ -451,7 +449,6 @@ void gmv_game_perf_report(double seconds)
     gmv_b2solve_report(seconds);
     gmv_bbfast_report(seconds);
     gmv_hudbars_report(seconds);
-    gmv_glstream_report(seconds);
     gmv_vbostatic_report(seconds);
     uf_report(seconds);
     b2p_report(seconds);

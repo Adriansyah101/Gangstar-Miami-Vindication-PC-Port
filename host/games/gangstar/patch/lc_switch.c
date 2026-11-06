@@ -1,10 +1,8 @@
 /* lc_switch.c -- LC_SWITCH: play as L.C. */
 #include "compat.h"
-#include <float.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "layout.h"

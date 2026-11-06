@@ -1,10 +1,6 @@
 /* sync_walk.c -- WALK_SYNC: scripted walkers' steering at high tick rates */
 #include "compat.h"
-#include <float.h>
-#include <math.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "layout.h"

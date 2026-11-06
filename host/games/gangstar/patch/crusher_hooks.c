@@ -1,10 +1,7 @@
 /* crusher_hooks.c -- UC_CRUSHER: the Crusher parked by LC's hotel */
 #include "compat.h"
-#include <float.h>
 #include <math.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "layout.h"

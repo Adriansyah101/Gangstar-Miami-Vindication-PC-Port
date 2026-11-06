@@ -1,7 +1,5 @@
 /* sun_moon_glow.c -- SUN_MOON: the glows behind the world */
 #include <math.h>
-#include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "compat.h"

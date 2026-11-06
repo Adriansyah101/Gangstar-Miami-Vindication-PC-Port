@@ -1,9 +1,6 @@
 /* fix_load.c -- LOAD_SLEEP_SKIP and LOAD_BUDGET: the streaming wait */
 #include "compat.h"
-#include <float.h>
-#include <math.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 

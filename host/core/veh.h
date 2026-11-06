@@ -1,5 +1,5 @@
-/* First-chance fault handling for the game image: veh.c on Windows and fault_linux.c on Linux get the fault, fault.c
-   says what it means. */
+/* veh.h -- first-chance fault handling for the game image: veh.c on Windows and fault_linux.c on Linux get the
+   fault, fault.c says what it means. */
 #ifndef GMV_VEH_H
 #define GMV_VEH_H
 

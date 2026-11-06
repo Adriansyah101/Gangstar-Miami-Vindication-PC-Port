@@ -1,3 +1,4 @@
+/* macho.c -- a read-only view of a thin i386 MH_EXECUTE Mach-O (see macho.h). */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

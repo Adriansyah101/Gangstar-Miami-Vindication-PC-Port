@@ -1,10 +1,6 @@
 /* radio_logo.c -- RADIO_LOGO_FIX: the HUD radio logo after getting into a car, and its trace */
 #include "compat.h"
-#include <float.h>
-#include <math.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "layout.h"

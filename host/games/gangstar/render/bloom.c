@@ -1,11 +1,9 @@
 /* bloom.c -- BLOOM */
 #include <math.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "compat.h"
-#include <xmmintrin.h>
 #include <GL/gl.h>
 
 #include "layout.h"
@@ -270,14 +268,6 @@ static void bl_pass(int w, int h, float sky)
     glBindTexture(GL_TEXTURE_2D, bl.t[0]);
     bl_size(p, w, h, bl.lw[0], bl.lh[0]);
     ao_tri();
-    if (g_bloom_survey >= 2) {                                  /* the glow layer alone, on black */
-        glDisable(GL_BLEND);
-        aof.Uniform1f(aof.GetUniformLocation(p, "k"), glow ? bg_gain() : 0.0f);
-        aof.Uniform1f(aof.GetUniformLocation(p, "dith"), 0.0f);
-        glBindTexture(GL_TEXTURE_2D, bl.t_glow);
-        bl_size(p, w, h, w, h);
-        ao_tri();
-    }
 
     static unsigned runs;
     if (runs++ % 1200 == 0)

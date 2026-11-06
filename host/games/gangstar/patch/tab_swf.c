@@ -1,6 +1,5 @@
 /* tab_swf.c -- GAMEPATCH_TAB: the SOUND page's rows and the page's credit, added to the menu file as it loads */
 #include "compat.h"
-#include <float.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>

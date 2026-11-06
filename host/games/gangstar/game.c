@@ -1,7 +1,6 @@
 /* game.c -- Gangstar: Miami Vindication's side of game.h, apart from the settings (settings.c) and the GL hooks
    (render\draw_hooks.c). */
 #include <stdint.h>
-#include <stdlib.h>
 #include "compat.h"
 
 #include "game.h"
@@ -123,12 +122,12 @@ int gmv_game_pointer_shown(void)
 void gmv_game_tick(void)
 {
     gmv_death_poll();                                   /* arms the capture on the tick health reaches 0 */
-    gmv_mission_poll();                                 /* MISSION_SURVEY */
     gmv_mission_replay_tick();                          /* MISSION_REPLAY */
     gmv_playerswitch_inventory_tick();                  /* PLAYERSWITCH_INVENTORY */
     gmv_uc_tick();                                      /* UC_CRUSHER */
     gmv_pool_tick();                                    /* the spawn pool after ORIGINAL_MAC_EXPERIENCE; [crowd] */
     gmv_menu_loop_tick();                               /* GMV_MENU_LOOP_SCENE test aid */
+    gmv_test_spawn_car_tick();                          /* GMV_TEST_SPAWN_CAR test aid */
 #if GMV_DEV
     gmv_state_trace_present();
 #endif

@@ -2,7 +2,6 @@
 #include "game.h"
 #include "log.h"
 
-
 #if GMV_DEV
 #define SOLO_CAR_ "SOLO_CAR, "
 #define LOG_SECTION "Diagnostics"
@@ -48,6 +47,7 @@ static const gmv_setting settings[] = {
     {"VTXFIX",         "Fixes", "1", "Guard against the vertex-converter crash when the player moves."},
     {"CRASH58_GUARD",  "Fixes", "1", "Guard against the game's null-forward crash (logged as [crash58])."},
     {"STOPLOCK_FIX",   "Fixes", "1", "Stop a car's gas and brake from dying for good after a full stop."},
+    {"MISSION_SAVE_FIX", "Fixes", "1", "Fix of the original game: the save keeps all 8 groups of mission flags, so Reginald's missions stay done after a load (the original writes only 7 and forgets his). Stays on with ORIGINAL_MAC_EXPERIENCE."},
     {"FAST_FTELL",     "Fixes", "1", FTELL_HELP_},
     {"FAST_FSEEK",     "Fixes", "1", FSEEK_HELP_},
     {"FAST_MEMMOVE",   "Fixes", "1", "Do the game's overlapping backward memory moves with SSE2, as the Mac's C library does, instead of " MEMMOVE_BY_ " (shortens the physics stutters while driving)."},
@@ -69,7 +69,7 @@ static const gmv_setting settings[] = {
     {"WATER_REFLECTIONS", "Graphics", "1", "1 = the sea reflects the city and the sky (screen-space reflections: only what is on screen can be reflected, so the reflection fades to the sky's colour near the screen's edges and when you look down at the water) (not on the Mac)."},
     {"REFLECTION_STRENGTH", "Graphics", "", "How strong the sea's reflections are (blank = 1.0; 0 = none, lower is fainter, up to 2)."},
     {"DYNAMIC_SHADOWS", "Graphics", "1", "1 = shadows that follow the sun and the moon, in place of the fixed one under each vehicle and person (not on the Mac). Only vehicles and people cast them. Also on the GAMEPATCH tab (DYNAMIC SHADOWS), at once."},
-    {"VEHICLE_REFLECTIONS", "Graphics", "1", "1 = the shiny cars (the ones the game gives its sky shine) reflect the street, the buildings and the other cars (screen-space reflections: only what is on screen can be reflected; where nothing is, the game's own shine stays). Matte cars stay matte (not on the Mac)."},
+    {"VEHICLE_REFLECTIONS", "Graphics", "1", "1 = the shiny cars (the ones the game gives its sky shine) reflect the street, the buildings and the other cars (screen-space reflections: what is on screen; where the reflected ray finds nothing, as on roofs and trunks, the screen itself is used as a sphere map, looked up by the reflected direction). Matte cars stay matte (not on the Mac)."},
     {"VEHICLE_REFLECTION_STRENGTH", "Graphics", "", "How strong the cars' reflections are (blank = 2.0, the strongest; 0 = none, lower is fainter)."},
     {"SUN_MOON",       "Graphics", "1", "A sun by day and a moon at night in the sky, with their glow (not on the Mac). 2 = as the iPhone version draws them: the glow shines through buildings. 1 = enhanced: the glow is hidden behind buildings with a soft edge and is brighter. 0 = none, as on the Mac."},
     {"SPAWN_FADE",     "Graphics", "1", "1 = the cars and pedestrians that come and go around you fade in and out over about a second (drawn through a fine dot pattern that fills in or thins out) instead of popping in and out (not on the Mac)."},
@@ -149,13 +149,8 @@ static const gmv_setting settings[] = {
     {"VEH_TRACE",      "Diagnostics", "0", "Vehicle AI drive-to destination trace."},
     {"CAM_TRACE",      "Diagnostics", "0", "[camtrace] how the camera follows the running character, every 2 s."},
     {"RADIO_TRACE",    "Diagnostics", "0", "[radio] station table, radio start, station switches, song picks and the HUD radio logo."},
-    {"FOG_SURVEY",     "Diagnostics", "0", "[fogsurvey] the distinct fixed-function setups (textures, blending, alpha test, lighting, fog) the world's 3D draws use, with draw counts every 30 s; 2 = instead the sea's chunks around the camera in one frame every 10 s."},
-    {"BLOOM_SURVEY",   "Diagnostics", "0", "[bloomsurvey] with BLOOM on (2 for the glow layer's modes): tint the draws that could be lights (magenta additive, cyan lit windows, yellow other blended, green drawn after the bloom, blue flat additive) and log their setups; 2 = instead show only what BLOOM_LIGHTS and BLOOM_WINDOWS make glow, on black; 3 = as 2, with the BLOOM_WINDOWS walls drawn at any hour, dim, the parts taken for lit windows magenta (only in the game's night textures), and those night textures saved to bloomtex\\ next to the " EXE_ "; 4 = each kind of light BLOOM_LIGHTS makes glow tinted in its own colour (red, green, blue, yellow, cyan, magenta, then again) and logged with its number and the game code that drew it."},
-    {"VEHICLE_SURVEY", "Diagnostics", "0", "[vehsurvey] with WATER_REFLECTIONS on: how the game draws its vehicles. Each part of a car (anything drawn with a car body's own placement) is tinted in its setup's colour (red, green, blue, yellow, cyan, magenta, then again) and logged once with its blending, depth, alpha test, texture combine, textures (with their alpha's spread), lighting and normals; a few of the body's vertices are logged too. A table of draws per setup follows every 30 s."},
-    {"VEHICLE_REFLECTION_DEBUG", "Diagnostics", "0", "[vr] with VEHICLE_REFLECTIONS on: each shiny car's pixels are tinted by what the reflection pass made of them: red = something drawn later covers it, grey = lost in the fog, blue = seen edge-on (faded out), magenta = the model's normal pointed into the car and was turned round, yellow = the reflected ray found nothing on screen (the game's own shine stays), green = it reflects what the ray hit, cyan = the same after passing the car itself."},
-    {"SPAWN_SURVEY",   "Diagnostics", "0", "[spawnsurvey] the city's spawn points (kind, category, caps, delays), each logged once, and every 15 s the world's count of each category and the classes of the objects in it."},
+    {"VEHICLE_REFLECTION_DEBUG", "Diagnostics", "0", "[vr] with VEHICLE_REFLECTIONS on: each shiny car's pixels are tinted by what the reflection pass made of them: red = something drawn later covers it, grey = lost in the fog, blue = seen edge-on (faded out), magenta = the model's normal pointed into the car and was turned round, yellow = the reflected ray found nothing on screen (the screen as a sphere map), green = it reflects what the ray hit, cyan = the same after passing the car itself."},
     {"UC_SPOT_SURVEY", "Diagnostics", "0", "[crusher] with UC_CRUSHER on: each time you get out of a car, its position, heading and navmesh place are logged; walk 10 m away from it on foot and the car is switched off and the Crusher stands in its place for this run (once ON A LION HUNT is done). Getting into a vehicle first cancels it."},
-    {"MISSION_SURVEY", "Diagnostics", "0", "[mission] every mission record (its numbers, texts and whether its flag in the save is set) when the game loads them, then once a second any change of the mission under way, its state, the save's mission flags and the race's state."},
     {"VTXLOG",         "Diagnostics", "1", "Log the cases the VTXFIX guard catches."},
     {"AUDIO_DUMP",     "Diagnostics", "0", "1 = record the mixed sound to gmv_audio_dump.wav next to the " EXE_ " (or give a file path)."},
     {"DUMP_FRAME",     "Diagnostics", "", "Save frame number N to gmv_frame.bmp (blank = off)."},
@@ -170,6 +165,7 @@ static const gmv_setting settings[] = {
     {"TEST_CLICK",     "Testing", "", "Inject a click in the window centre at frame N (blank = off)."},
     {"TEST_FATAL",     "Testing", "", "Stop the game about 10 s in, to try the error box: 1 = a bad memory write, 2 = a missing import, 3 = an illegal instruction, 4 = a crash on another thread (blank = off)."},
     {"PAD_TEST",       "Testing", "", "A virtual pad for tools\\playtest: xbox, ds4, ds5 or raw; its state is the text of cache\\padtest.txt (blank = off)."},
+    {"TEST_SPAWN_CAR", "Testing", "", "A vehicle type's own name (Laufer, Lambo, Vamp, Tawny, Taxi, CopCar...): once a save is in the city and the player has stood 3 s on foot with no mission, a car of that type is made where they stand and they are put at its wheel, once a run (blank = off)."},
     {"FORCE_DRAW",     "Testing", "0", "Force the game's draw flag on."},
     {"FORCE_GATE6",    "Testing", "0", "Force the front-end gate 6 flag."},
     {"MENU_LOOP_SCENE", "Testing", "", "Show only the main menu's Nth background scene, over and over (1-16 in the menu's order; 4 = the countryside walk, 5 = the downtown ambulance; blank = off)."},
@@ -217,12 +213,14 @@ static const char *const section_help[][2] = {
    fades the Mac showed), and so do the speed-ups, which change no picture or rule: since 2026-11-05 at
    the user's choice also the loading ones (LOAD_SLEEP_SKIP, LOAD_BUDGET, FAST_LOAD), whose stalls in the
    main menu's scene changes depend on the machine, not on the game.  Every fix of an original-game bug
-   is off, the visible ones too (MENUFLASH_FIX, FADE_EDGE_FIX, MENU_FADE_CLICKS, also 2026-11-05);
+   is off, the visible ones too (MENUFLASH_FIX, FADE_EDGE_FIX, MENU_FADE_CLICKS, also 2026-11-05), except
+   MISSION_SAVE_FIX (2026-11-06, the user's choice: a save made under the preset must keep Reginald's missions, so
+   MISSION_REPLAY still offers them once the preset is off);
    so is everything that changes timing, physics, what you hear, which radio logo the HUD shows, whether the
    main menu has its More Games corner and Gameloft LIVE! badge or whether a sprint puts the weapon away.  NULL = the call site's built-in default (FRAME_MS blank = 60 ticks/s). */
 static const gmv_preset_value mac_preset[] = {
     {"TEXFIX", "1"}, {"SWAP_COPY", "1"}, {"NO_FLICKER", "1"},
-    {"VTXFIX", "1"}, {"CRASH58_GUARD", "1"}, {"STOPLOCK_FIX", "1"}, {"FAST_FTELL", "1"},
+    {"VTXFIX", "1"}, {"CRASH58_GUARD", "1"}, {"STOPLOCK_FIX", "1"}, {"MISSION_SAVE_FIX", "1"}, {"FAST_FTELL", "1"},
     {"FAST_FSEEK", "1"}, {"FAST_MEMMOVE", "1"}, {"STATIC_VBO", "1"}, {"DPI_AWARE", "1"},
     {"LOAD_SLEEP_SKIP", "1"}, {"LOAD_BUDGET", "200"}, {"FAST_LOAD", "1"},
     {"MENUFLASH_FIX", "0"}, {"FADE_EDGE_FIX", "0"}, {"MENU_FADE_CLICKS", "0"},
@@ -249,6 +247,6 @@ const gmv_settings_table gmv_game_settings = {
     settings, sizeof settings / sizeof *settings, header, section_help, sizeof section_help / sizeof *section_help,
     mac_preset, sizeof mac_preset / sizeof *mac_preset,
     "[config] ORIGINAL_MAC_EXPERIENCE=1: 60 ticks/s, original physics, no MENUFLASH_FIX, FADE_EDGE_FIX, MENU_FADE_CLICKS, " SOLO_CAR_ "RADIO_LOGO_FIX, SWITCH_SAVE_FIX, ANISOTROPIC_FILTERING, AMBIENT_OCCLUSION, BLOOM, WATER_REFLECTIONS, VEHICLE_REFLECTIONS, SUN_MOON, SPAWN_FADE, DRAW_DISTANCE, FOG_MODE/FOG_HEIGHT, HIDE_MORE_GAMES, HIDE_GAMELOFT_LIVE, SHORT_WARNING, FAST_LOAD, CUTSCENE_KEYS, TUTORIAL_KEYS, ALLOW_WEAPON_SPRINT, MINIMAP_SHOPS, MISSION_REPLAY, PAD_ICONS, PAD_LAYOUT, PAD_MENU, PAD_HINTS, KEY_MOVE, PLAYERSWITCH_INVENTORY, LC_SWITCH, UC_CRUSHER, CUSTOM_RADIO, RADIO_SONGS, NO_INTRO, SHOW_CURSOR or the population densities; "
-            "TEXFIX, SWAP_COPY, NO_FLICKER, VTXFIX, CRASH58_GUARD, STOPLOCK_FIX, STATIC_VBO, LOAD_SLEEP_SKIP, LOAD_BUDGET=200 and FAST_LOAD on; MSAA=4\n",
+            "TEXFIX, SWAP_COPY, NO_FLICKER, VTXFIX, CRASH58_GUARD, STOPLOCK_FIX, MISSION_SAVE_FIX, STATIC_VBO, LOAD_SLEEP_SKIP, LOAD_BUDGET=200 and FAST_LOAD on; MSAA=4\n",
     retired, sizeof retired / sizeof *retired,
 };

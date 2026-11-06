@@ -1,10 +1,7 @@
 /* diag_fade.c -- diagnostic: full-screen black fades, and the player's death */
 #include "compat.h"
-#include <float.h>
 #include <math.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "layout.h"

@@ -1,11 +1,7 @@
 /* vehicle_reflections.c -- VEHICLE_REFLECTIONS */
 #include <math.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include "compat.h"
-#include <xmmintrin.h>
 #include <GL/gl.h>
 
 #include "layout.h"
@@ -14,7 +10,7 @@
 #include "gangstar.h"
 #include "render.h"
 
-/* ---- VEHICLE_REFLECTIONS: an enhancement, off by default and under ORIGINAL_MAC_EXPERIENCE --------------
+/* ---- VEHICLE_REFLECTIONS: an enhancement, on by default, off under ORIGINAL_MAC_EXPERIENCE ---------------
    Screen-space reflections on the shiny cars, in the same place as the sea's and just after them.  The
    game's own shine on a car is a fixed 256² picture of a sky added onto the paint, looked up by which way
    the surface faces (unit 1 COMBINE ADD, its coordinates the normals themselves), so a car never mirrors
@@ -28,10 +24,18 @@
      (from just off the surface, so the car does not find itself where it starts), and where the ray
      hits something mixes it in by Fresnel's law (Schlick, 8% head-on: a real clear coat's 4% left the
      middle of a bonnet or trunk looking bare at the user's look; more than this reads as plastic), times
-     VEHICLE_REFLECTION_STRENGTH, fading towards the screen's edges and with the fog.  Where the ray
-     hits nothing the game's sky picture stays as it was.  A body within 6 m of where the ray started
-     is the same car and is marched through: seen from behind, a trunk's rays meet the rear window,
-     whose dark glass (it cannot show what the glass itself reflects) left the trunk looking bare.
+     VEHICLE_REFLECTION_STRENGTH, fading towards the screen's edges and with the fog.  A body within 6 m
+     of where the ray started is the same car and is marched through: seen from behind, a trunk's rays
+     meet the rear window, whose dark glass (it cannot show what the glass itself reflects) left the trunk
+     looking bare.
+   - Where the ray hits nothing (since 2026-11-06), the screen itself serves as a sphere map, looked up by
+     the reflected direction: uv = 0.5 + 0.5 * its x and y in eye space, softened by a 5-tap blur, and mixed
+     in by the same Fresnel.  Before, the game's sky picture stayed alone there, and the roofs and trunks,
+     whose rays rise off the top of the screen, looked bare (the user's complaint of 2026-10-28, an SSR
+     limit, not a bug).  A trick some car games of the time used with the frame before; here the frame
+     itself is at hand, as the pass runs after the scene.  Not a mirror: a trunk can show what is in front
+     of the camera, but the colours are the scene's and move with it.  Compared on a Laufer at the user's
+     request with the sphere map alone and the march alone; the user chose this mix.
    - Paint and glass are one draw with no mask (the paint texture's alpha is 255 throughout), so they
      reflect alike. */
 float g_vr_strength = 2.0f;                      /* VEHICLE_REFLECTION_STRENGTH (blank = 2, the user's choice) */
@@ -86,6 +90,17 @@ static const char vr_fs[] =
     "uniform mat4 proj, invp;\n"
     "uniform float str, wmin, reach, dbg;\n"
     "float dat(vec2 px) { return texture2D(dep, px / full).r; }\n"
+    /* where the ray finds nothing: the screen as a sphere map, by the reflected direction; b = blur in screens */
+    "vec3 sphere_scr(vec3 r, float b) {\n"
+    "    vec2 u = 0.5 + 0.5 * normalize(r).xy;\n"
+    "    vec2 o = vec2(b * vp.w / vp.z, b);\n"
+    "    vec3 c = texture2D(scn, (vp.xy + u * vp.zw) / full).rgb * 0.4;\n"
+    "    c += texture2D(scn, (vp.xy + clamp(u + vec2(o.x, 0.0), 0.0, 1.0) * vp.zw) / full).rgb * 0.15;\n"
+    "    c += texture2D(scn, (vp.xy + clamp(u - vec2(o.x, 0.0), 0.0, 1.0) * vp.zw) / full).rgb * 0.15;\n"
+    "    c += texture2D(scn, (vp.xy + clamp(u + vec2(0.0, o.y), 0.0, 1.0) * vp.zw) / full).rgb * 0.15;\n"
+    "    c += texture2D(scn, (vp.xy + clamp(u - vec2(0.0, o.y), 0.0, 1.0) * vp.zw) / full).rgb * 0.15;\n"
+    "    return c;\n"
+    "}\n"
     "vec3 unproj(vec2 px, float z) {\n"
     "    vec4 p = invp * vec4((px - vp.xy) / vp.zw * 2.0 - 1.0, z, 1.0);\n"
     "    return p.xyz / p.w;\n"
@@ -187,7 +202,10 @@ static const char vr_fs[] =
     "        drop(nd.a < 0.84 ? vec3(1.0, 0.0, 1.0) : hit < 0.0 ? vec3(1.0, 1.0, 0.0) : through ? vec3(0.0, 1.0, 1.0) : vec3(0.0, 1.0, 0.0));\n"
     "        return;\n"
     "    }\n"
-    "    if (hit < 0.0) discard;\n"
+    "    if (hit < 0.0) {\n"                              /* nothing hit: the screen as a sphere map */
+    "        gl_FragColor = vec4(sphere_scr(r, 0.015), min(F * str, 0.85) * clear);\n"
+    "        return;\n"
+    "    }\n"
     "    vec2 s = s0 + ds * hit;\n"
     "    float e = clamp(min(min(s.x, full.x - s.x), min(s.y, full.y - s.y)) / (0.06 * full.y), 0.0, 1.0);\n"
     "    gl_FragColor = vec4(texture2D(scn, s / full).rgb, min(F * str, 0.85) * clear * e);\n"

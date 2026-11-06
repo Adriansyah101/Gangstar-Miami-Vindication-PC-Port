@@ -1,10 +1,8 @@
 /* pad_hints.c -- PAD_HINTS: tutorial boxes name the pad's buttons */
 #include "compat.h"
-#include <float.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "layout.h"

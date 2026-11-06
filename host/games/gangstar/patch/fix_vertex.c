@@ -1,10 +1,8 @@
 /* fix_vertex.c -- the vertex-format converter's missing guard, and its diagnostics */
 #include "compat.h"
-#include <float.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "layout.h"

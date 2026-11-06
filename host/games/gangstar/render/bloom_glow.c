@@ -1,11 +1,7 @@
 /* bloom_glow.c -- BLOOM_LIGHTS and BLOOM_WINDOWS: the glow layer */
-#include <math.h>
-#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include "compat.h"
-#include <xmmintrin.h>
 #include <GL/gl.h>
 
 #include "layout.h"
@@ -16,7 +12,7 @@
 
 /* ---- BLOOM_LIGHTS / BLOOM_WINDOWS: the glow layer (with BLOOM, so off by default and under
    ORIGINAL_MAC_EXPERIENCE) ----
-   BLOOM_SURVEY found the game's lights too dim for the bloom's brightness threshold.  The street-lamp
+   A survey of the game's draws (2026-10-27) found its lights too dim for the bloom's brightness threshold.  The street-lamp
    cones, neon, crane and highway lights are additive draws (depth-tested, from 0x50a5ad) of a nearly
    black texture (95, average 9,7,9).  The lit windows are painted into the buildings' one wall texture
    and darkened by the lighting along with it.  (The two-texture setup with unit 1 added is the
@@ -40,22 +36,14 @@
 #define BG_LIGHT_GAIN 2.0f                              /* BLOOM_LIGHTS=1: a light glows at twice its colour */
 
 static const char bg_fs_main[] =
-#if GMV_DEV
-    "uniform float gain, fogon, survey;\n"
-#else
     "uniform float gain, fogon;\n"
-#endif
     "void main() {\n"
     "    vec4 t = texture2DProj(t0, gl_TexCoord[0]);\n"
     "    vec3 a = texture2DProj(t0, gl_TexCoord[0], 16.0).rgb;\n"   /* the last mipmap: the atlas's average */
     "    float k = smoothstep(0.42, 0.6, max(t.r, max(t.g, t.b))) * smoothstep(0.06, 0.18, max(t.r, t.g) - t.b)\n"
     "            * step(a.r + 0.015, a.b) * step(max(a.r, max(a.g, a.b)), 0.33);\n"
     "    float f = fogon > 0.0 ? fog_clear() : 1.0;\n"
-#if GMV_DEV
-    "    vec3 c = survey > 0.0 ? mix(t.rgb * 0.15, vec3(1.0, 0.0, 1.0), step(0.05, k)) : t.rgb * k;\n"   /* BLOOM_SURVEY=3 */
-#else
     "    vec3 c = t.rgb * k;\n"
-#endif
     "    gl_FragColor = vec4(c * (gain * f), t.a * gl_Color.a);\n"
     "}\n";
 
@@ -77,9 +65,6 @@ static void bg_windows_init(void)
     }
     bg.u_gain = aof.GetUniformLocation(bg.p, "gain");
     bg.u_fogon = aof.GetUniformLocation(bg.p, "fogon");
-#if GMV_DEV
-    bg.u_survey = aof.GetUniformLocation(bg.p, "survey");
-#endif
     bg.u_invp = aof.GetUniformLocation(bg.p, "invp");
     bg.u_vp = aof.GetUniformLocation(bg.p, "vp");
     bg.u_dr = aof.GetUniformLocation(bg.p, "dr");
@@ -210,78 +195,12 @@ int bg_draw_begin(GLenum mode)
     } else if (g_blend_on) {
         d = g_blend_src == GL_DST_COLOR && g_blend_dst == GL_ZERO ? GL_SRC_COLOR : g_blend_dst;
     } else if (bg.p && g_bloom_windows > 0 && g_ao_dmask && mode != GL_POINTS && g_te[0].mode == GL_MODULATE &&
-               (g_tf_tex2d & (g_texfix ? g_tf_tcarr : 0xF) & 0xF) == 1 && (bg_night() > 0 || g_bloom_survey == 3)) {
+               (g_tf_tex2d & (g_texfix ? g_tf_tcarr : 0xF) & 0xF) == 1 && bg_night() > 0) {
         kind = 2;
     }
     bg.Enablei(GL_BLEND, 1);
     bg.BlendFunci(1, s, d);
     return kind;
-}
-
-/* BLOOM_SURVEY=3: log each texture the windows' pass draws (unit 0, top level) once, with its average
-   colour and how many of its texels the shader's test takes, and save the night atlases among them as
-   bloomtex\tex<name>_<w>x<h>.tga next to the exe (64 at most), to tune that test on the game's own walls. */
-static void bg_dump_tex(void)
-{
-    static GLuint seen[1024];
-    static int n, saved;
-    static char dir[MAX_PATH];
-    void(APIENTRY * act)(GLenum) = tf_active_real();
-    GLint a = 0, t = 0, w = 0, h = 0;
-    if (n == 1024 || !act)
-        return;
-    glGetIntegerv(0x84E0, &a);                          /* GL_ACTIVE_TEXTURE */
-    act(0x84C0);
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &t);
-    for (int i = 0; i < n; i++)
-        if (seen[i] == (GLuint)t) { act(a); return; }
-    seen[n++] = (GLuint)t;
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &w);
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &h);
-    unsigned char *px = w > 0 && h > 0 && w <= 4096 && h <= 4096 ? malloc((size_t)w * h * 4) : NULL;
-    if (px) {
-        GLint pb = 0;
-        glGetIntegerv(0x88ED, &pb);                     /* GL_PIXEL_PACK_BUFFER_BINDING */
-        if (!pb)
-            glGetTexImage(GL_TEXTURE_2D, 0, 0x80E1, GL_UNSIGNED_BYTE, px);   /* GL_BGRA */
-    }
-    act(a);
-    if (!px)
-        return;
-    if (!dir[0]) {
-        DWORD k = GetModuleFileNameA(NULL, dir, MAX_PATH);
-        while (k && dir[k - 1] != GMV_DIRSEP) k--;
-        snprintf(dir + k, MAX_PATH - k, "bloomtex");
-        CreateDirectoryA(dir, NULL);
-    }
-    unsigned lit = 0;
-    double sum[3] = {0};
-    for (size_t i = 0; i < (size_t)w * h; i++) {
-        const unsigned char *p = px + i * 4;            /* B G R A */
-        int rg = p[2] > p[1] ? p[2] : p[1], mx = rg > p[0] ? rg : p[0];
-        sum[0] += p[2], sum[1] += p[1], sum[2] += p[0];
-        if (mx >= 107 && rg - p[0] >= 15)               /* 0.42, 0.06: the shader's test, at its foot */
-            lit++;
-    }
-    double n_px = (double)w * h, ar = sum[0] / n_px, ag = sum[1] / n_px, ab = sum[2] / n_px;
-    int night = ab >= ar + 4 && ar < 84 && ag < 84 && ab < 84;   /* 0.015, 0.33 */
-    char path[MAX_PATH + 40];
-    snprintf(path, sizeof path, "%s" GMV_SEP "tex%u_%dx%d.tga", dir, (unsigned)t, w, h);
-    FILE *f = night && saved < 64 ? fopen(path, "wb") : NULL;
-    if (f) {
-        saved++;
-        unsigned char hd[18] = {0, 0, 2};               /* uncompressed true colour, bottom-up as GL */
-        hd[12] = (unsigned char)w, hd[13] = (unsigned char)(w >> 8);
-        hd[14] = (unsigned char)h, hd[15] = (unsigned char)(h >> 8);
-        hd[16] = 32, hd[17] = 8;
-        fwrite(hd, 1, 18, f);
-        fwrite(px, 4, (size_t)w * h, f);
-        fclose(f);
-    }
-    gmv_log("[bloomsurvey] windows' pass texture %u (%dx%d): average %.0f,%.0f,%.0f, %s; %.2f%% of texels lit by the test; %s\n",
-            (unsigned)t, w, h, ar, ag, ab, night ? "a night atlas" : "not a night atlas", 100.0 * lit / n_px,
-            f ? path : "not saved");
-    free(px);
 }
 
 /* After the draw (bg_draw_begin gave 2), before the fog's clip plane goes: the same draw again into the
@@ -297,10 +216,7 @@ void bg_draw_end(int kind, int elems, GLenum mode, GLint first, GLsizei count, G
     if (!da || !de)
         return;
     GLfloat u[30];
-    int sv = g_bloom_survey == 3;
-    int fog = !sv && (g_fog_all || g_ao_fog_on) && g_ao_fogp[0] == 0x2601 && g_ao_fogp[2] > g_ao_fogp[1] && fh_params(u);
-    if (sv)
-        bg_dump_tex();
+    int fog = (g_fog_all || g_ao_fog_on) && g_ao_fogp[0] == 0x2601 && g_ao_fogp[2] > g_ao_fogp[1] && fh_params(u);
     GLint prog = 0;
     glGetIntegerv(0x8B8D, &prog);                       /* GL_CURRENT_PROGRAM */
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -309,11 +225,8 @@ void bg_draw_end(int kind, int elems, GLenum mode, GLint first, GLsizei count, G
     glDepthMask(GL_FALSE);
     glDepthFunc(GL_LEQUAL);
     aof.UseProgram(bg.p);
-    aof.Uniform1f(bg.u_gain, (sv ? 1.0f : g_bloom_windows * bg_night()) / bg_gain());
+    aof.Uniform1f(bg.u_gain, g_bloom_windows * bg_night() / bg_gain());
     aof.Uniform1f(bg.u_fogon, fog ? 1.0f : 0.0f);
-#if GMV_DEV
-    aof.Uniform1f(bg.u_survey, sv ? 1.0f : 0.0f);
-#endif
     if (fog) {
         aof.UniformMatrix4fv(bg.u_invp, 1, GL_FALSE, u);
         aof.Uniform4f(bg.u_vp, u[16], u[17], u[18], u[19]);
@@ -322,9 +235,9 @@ void bg_draw_end(int kind, int elems, GLenum mode, GLint first, GLsizei count, G
         aof.Uniform4f(bg.u_hgt, u[26], u[27], u[28], u[29]);
     }
     if (elems)
-        gmv_gls_draw((void *)de, 1, mode, 0, count, type, idx, !g_sky_floor_on);
+        de(mode, count, type, idx);
     else
-        gmv_gls_draw((void *)da, 0, mode, first, count, 0, NULL, 1);
+        da(mode, first, count);
     glPopAttrib();
     aof.UseProgram((GLuint)prog);
     bg.windows++;

@@ -741,7 +741,6 @@ static void perf_samples(long long t0, long long t1)
     perf_inclusive(t0, t1, total);
 }
 
-
 static void perf_tick(long long t, double ms, int drew)
 {
     g_pw.ticks++;

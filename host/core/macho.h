@@ -1,4 +1,4 @@
-/* Read-only view of a thin i386 MH_EXECUTE Mach-O. */
+/* macho.h -- a read-only view of a thin i386 MH_EXECUTE Mach-O. */
 #ifndef GMV_MACHO_H
 #define GMV_MACHO_H
 

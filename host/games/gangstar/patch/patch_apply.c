@@ -1,11 +1,6 @@
 /* patch_apply.c -- gmv_apply_gamepatch: what goes in at the start, and in and out with ORIGINAL_MAC_EXPERIENCE */
 #include "compat.h"
-#include <float.h>
-#include <math.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "layout.h"
 #include "log.h"
@@ -121,6 +116,7 @@ void gmv_apply_gamepatch(void)
     apply_veh_trace();
     apply_crash58_guard();
     apply_stoplock_fix();
+    apply_mission_save_fix();   /* on under ORIGINAL_MAC_EXPERIENCE too (the user's choice), so not in its group */
     apply_menu_fade_clicks();
     apply_fade_edge_fix();
     apply_load_sleep_skip();
@@ -141,7 +137,6 @@ void gmv_apply_gamepatch(void)
     if (!gmv_config_mac())
         mac_features_in();      /* after the trace (the radio's hook chains to it) and the draw distance */
     crowd_hooks_in();
-    apply_mission_survey();
     apply_options_tab();
     apply_mission_replay();
     apply_uc_crusher();

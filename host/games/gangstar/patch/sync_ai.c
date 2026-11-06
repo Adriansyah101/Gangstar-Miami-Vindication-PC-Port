@@ -1,10 +1,6 @@
 /* sync_ai.c -- AI_SYNC: AI characters' stuck check at high tick rates */
 #include "compat.h"
-#include <float.h>
-#include <math.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "layout.h"

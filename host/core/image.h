@@ -1,4 +1,4 @@
-/* Puts the game image at its own addresses and runs the low range from its copy. */
+/* image.h -- puts the game image at its own addresses and runs the low range from its copy. */
 #ifndef GMV_IMAGE_H
 #define GMV_IMAGE_H
 

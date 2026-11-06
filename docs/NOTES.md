@@ -534,8 +534,7 @@ Most of the city's materials have it off, on the Mac too: buildings, roads and t
     range. At first the sea was carried on only once per frame, and that first chunk could be the
     far pass's. Then the whole extension lay past the fog's clip and the box's edge showed again, a
     slanted line across the sea about 70% into the fog (`DRAW_DISTANCE=2`, `FOG_END=800`).
-  - **Log:** `[fog] the sea goes on past the map's edge`. `FOG_SURVEY=2` logs the sea's chunks around
-    the camera (`[seasurvey]`).
+  - **Log:** `[fog] the sea goes on past the map's edge`. The code is `sea_beyond` in `render/fog.c`.
 - **Below the horizon:** the sky gradient repeats the sky upside down below eye level, which showed
   as an orange or dark void wherever no world was drawn. Those colours are now the fog's colour, as
   fully fogged sea would be.
@@ -576,7 +575,8 @@ and blending stay as they were.
   - **Up direction:** taken from the sky's orientation (`sky.inv`).
 - **End:** nothing is drawn past `FOG_END`. The clip plane counts depth, which reaches further at
   the screen's edges, so the world ends on the circle where the skyline's foot stands.
-- **Materials:** three shaders cover every setup `FOG_SURVEY=1` found in the city:
+- **Materials:** three shaders cover every setup a survey of the city's draws found (`FOG_SURVEY`, a dev
+  diagnostic, taken out 2026-11-06 once its work was done):
   - plain colour;
   - unit 0 `MODULATE`;
   - unit 0 `MODULATE` plus unit 1 `COMBINE`, which adds its colour and multiplies its alpha (lit
@@ -791,8 +791,8 @@ rather than reading the system's cursor beside raw motion, which is what the Win
 | [`host/shims/gl/`](../host/shims/gl/) | `gl_window.c` the pacer's settings; `gl_msaa.c` the screen framebuffer; `gl_context.c` the SDL window, GL context, pixel format, `NSOpenGLContext`; `gl_present.c` the frame present (`gmv_gl_swap`) and tick pacer; `gl_draw.c` the draw wrappers and `TEXFIX`; `gl_trace.c`, `gl_diag.c` diagnostics; `gl_bind.c` CGL stubs, the GL binding (`gmv_gl_resolve`) and the one GL loader (`gl_real`); `glshim.h` what they share with a game's render code |
 | [`host/games/gangstar/layout.h`](../host/games/gangstar/layout.h) | The fixed address-space layout, the names, the classes |
 | [`host/games/gangstar/game.c`](../host/games/gangstar/game.c), [`settings.c`](../host/games/gangstar/settings.c) | Gangstar's side of `game.h`; every key of `GangstarMV.ini` and the `ORIGINAL_MAC_EXPERIENCE` preset |
-| [`host/games/gangstar/patch/`](../host/games/gangstar/patch/) | Surgical patches to the game's own code and the hooks behind the fixes and enhancements, a file for each: `fix_*` (`fix_vertex.c` the movement crash, `fix_crash58.c` the null-delegate guard), `sync_*` the high tick rates, `pad_*`, `key_move.c`, `draw_distance.c`, `density.c`, `spawn_fade.c`, `mission_replay.c`, `lc_switch.c`, `tab*.c` the GAMEPATCH tab, `diag_*` and `test_*` the diagnostics and test aids. `patch_common.c` writes to the game's code and `patch_apply.c` holds `gmv_apply_gamepatch`. Each patch no-ops unless the bytes match. `patch.h` is what they share |
-| [`host/games/gangstar/render/`](../host/games/gangstar/render/) | The effects, a file for each: `ao.c`, `bloom.c`, `bloom_glow.c`, `fog.c`, `fog_hybrid.c`, `aniso.c`, `water_reflections.c`, `vehicle_reflections.c`, `dynamic_shadows.c`, `sun_moon_glow.c`, `survey_*` the surveys. `draw_hooks.c` says what happens around each draw, `present_hold.c` is `MENUFLASH_FIX`, `render.h` what they share |
+| [`host/games/gangstar/patch/`](../host/games/gangstar/patch/) | Surgical patches to the game's own code and the hooks behind the fixes and enhancements, a file for each: `fix_*` (`fix_vertex.c` the movement crash, `fix_crash58.c` the null-delegate guard), `sync_*` the high tick rates, `pad_*`, `key_move.c`, `draw_distance.c`, `density.c`, `spawn_fade.c`, `mission_replay.c`, `lc_switch.c`, `tab*.c` the GAMEPATCH tab, `game_read.c` the game's memory, strings and script commands read without faulting, `diag_*` and `test_*` the diagnostics and test aids. `patch_common.c` writes to the game's code and `patch_apply.c` holds `gmv_apply_gamepatch`. Each patch no-ops unless the bytes match. `patch.h` is what they share |
+| [`host/games/gangstar/render/`](../host/games/gangstar/render/) | The effects, a file for each: `ao.c`, `bloom.c`, `bloom_glow.c`, `fog.c`, `fog_hybrid.c`, `aniso.c`, `water_reflections.c`, `vehicle_reflections.c`, `dynamic_shadows.c`, `sun_moon_glow.c`. `draw_hooks.c` says what happens around each draw, `present_hold.c` is `MENUFLASH_FIX`, `render.h` what they share |
 | [`host/games/gangstar/features/padicons.c`](../host/games/gangstar/features/padicons.c) | `PAD_ICONS`: recognises the menu's gamepad atlas (`splash_gamepad`, 4096×2048 DXT5) at its upload, keeps the blocks under its pictures, draws Xbox / PlayStation versions over them (distance-field shapes, GDI Arial letters on Windows, FreeType's on Linux, its own DXT5 encoder, mip levels 1-6 box-filtered) and swaps them in with `glCompressedTexSubImage2D` after a present when the pad kind changes |
 | [`host/games/gangstar/features/customradio.c`](../host/games/gangstar/features/customradio.c) | `CUSTOM_RADIO`: the sixth station's songs, decoding (`songdec.c` first; Media Foundation on Windows, `ffmpeg` on Linux for the rest) and mixing (item 18) |
 | [`host/games/gangstar/features/ucveh.c`](../host/games/gangstar/features/ucveh.c) | `UC_CRUSHER`: the Crusher monster truck, from the player's own add-on folder |
@@ -802,7 +802,6 @@ rather than reading the system's cursor beside raw motion, which is what the Win
 | [`host/games/gangstar/features/b2solve.c`](../host/games/gangstar/features/b2solve.c) | `b2World::Solve` without walking every body, with identical results |
 | [`host/games/gangstar/features/hudbars.c`](../host/games/gangstar/features/hudbars.c) | The HUD's health and armour bars without a full UI search per update |
 | [`host/games/gangstar/features/bbfast.c`](../host/games/gangstar/features/bbfast.c) | The billboard turn with its range tests first, same results |
-| [`host/games/gangstar/features/glstream.c`](../host/games/gangstar/features/glstream.c) | `VBO_STREAM`: an experiment that came out slower. Off, dev builds only |
 | [`host/games/gangstar/features/perf_probes.c`](../host/games/gangstar/features/perf_probes.c) | `PERF_PROFILE`: the game's own routines, timed. Left out of a release build |
 | `tools/` | Offline analysis/generators (genlow, machoinfo, disasm, initreach, objc1dump, ...) |
 | `analysis/` | Parsed reports: imports, static-init reachability, ObjC classes, SDL |
@@ -939,7 +938,7 @@ One row per key, so that each change from the Mac game says why it is there. The
 | `ALLOW_WEAPON_SPRINT` | enhancement (as on the iPhone) | 10-27 | The Mac puts the weapon away during a sprint. | off | 16 |
 | `TRAFFIC_DENSITY`, `PEDESTRIAN_DENSITY`, `PARKED_CAR_DENSITY` | enhancement | 10-27 | More cars and people than the Mac's caps of 18 / 14 / 10. | 1, and the Mac's spawn pool | `density.c` header |
 | `GAMEPATCH_TAB` | enhancement (native menu, no overlay) | 10-27 | Settings changed inside the game's own options menu. | stays, with only the preset's switch, which is the way back | "Running and settings" |
-| `VEHICLE_REFLECTIONS` | enhancement | 10-28 | Shiny cars reflect the street, after the water reflections. | off | `vehicle_reflections.c` header |
+| `VEHICLE_REFLECTIONS` | enhancement | 10-28; 11-06 | Shiny cars reflect the street, after the water reflections. Since 11-06 the ray's misses (roofs, trunks) take the screen as a sphere map instead of staying bare, the user's choice after comparing three looks on a Laufer. | off | `vehicle_reflections.c` header |
 | `MISSION_REPLAY` | enhancement | 10-28 | Replay completed missions from the SERVICES menu. | off; its tab's hooks stay in, hidden, because the menu is built once at the start | `mission_replay.c` header |
 | `PAD_ICONS` | enhancement | 10-28 | The game's pad pictures show only where a button is, not its Xbox or PlayStation name. | off | `padicons.c` header |
 | `UC_CRUSHER` | enhancement (add-on from the user's own Urban Crime) | 10-29 | The Crusher truck parked by L.C.'s hotel after ON A LION HUNT. | off; with the add-on there its files are still read at the start, unused (the user's choice, 11-03) | `ucveh.c` header |
@@ -1180,6 +1179,15 @@ it, so hover is required; this is why hover highlights now light up. A **state-t
      which the script runner calls on every update. Besides the scene scripts, the menu's
      ambient pedestrians walk through it as well, from a shared behaviour script (kind 1,
      index 87), so the fix covers them too.
+
+     **Test aid: the player at the wheel of a car (`TEST_SPAWN_CAR`, 2026-11-06).**
+     `patch/test_spawncar.c`, dev builds only, asked for by the user to compare car reflections up
+     close. `TEST_SPAWN_CAR=Laufer` (a type's own name in `metatypes.gmap`; Laufer is type 141):
+     once the save is in the city, no menu shows, no mission is under way and the player has stood
+     3 s on foot, a car of that type is made where they stand, as the Crusher is (`uc_make`), and
+     they are seated at once through Player vt+0x68, as the Crusher's swap does. The function needs
+     `force_align_arg_pointer`: the seating's `movaps` on the stack (`0x6e262`) faulted without it.
+     The playtest scenario `car-reflections` uses it.
 
      **Test aid: one menu scene on a loop, camera behind its walker (`MENU_LOOP_SCENE`,
      `MENU_LOOP_CAM`, 2026-10-27).** `apply_menu_loop` in `gamepatch.c`, for watching the walkers
@@ -2150,8 +2158,8 @@ it, so hover is required; this is why hover highlights now light up. A **state-t
       to msvcrt's base, where the page before is free. It now checks with `ReadProcessMemory` when those bytes
       cross a page.
     - **The loading fixes go on under `ORIGINAL_MAC_EXPERIENCE` (2026-11-05, the user's choice).** The user found
-      the preset choppy in an odd way, in the main menu too, while the port of Fast Five looks smooth at the same
-      30 drawn fps. Between stalls both games are equally even: the pacer, the present before the wait and vsync
+      the preset choppy in an odd way, in the main menu too, while another game run on the same host looks smooth
+      at the same 30 drawn fps. Between stalls both games are equally even: the pacer, the present before the wait and vsync
       off are the same code in both. The difference was the main menu's scene changes, which load a part of the
       city each. Two 90 s runs in the main menu at 60 ticks/s (`PACE_LOG`, `LOAD_PROFILE=30`, `PERF_PROFILE`):
       with the preset as it was, 16 ticks over 30 ms, the scene changes 116-219 ms (the game's 1500-item budget)
@@ -2261,6 +2269,32 @@ it, so hover is required; this is why hover highlights now light up. A **state-t
       (`shot <name> full`) and checks it with a new `edge` step: the top row and left column may be at most 3 of
       255 brighter than the row and column two pixels in. With the fix 0.4; with `FADE_EDGE_FIX=0` 70.8 (fails, as
       it should). boot, gamepatch, mac-preset, first-start and world passed too.
+
+34. **Reginald's missions forgotten by every save — original game, fixed at the user's request (2026-11-06),
+    `MISSION_SAVE_FIX`, on by default and on under `ORIGINAL_MAC_EXPERIENCE` too (the user's choice: a save made
+    under the preset must keep them, so `MISSION_REPLAY` still offers them once the preset is off).** The user
+    asked to have Reginald's missions and every wheel and surfboard marked done in their save, and wondered
+    whether their own earlier edits of the save had broken it. They had not: every save has the same gap,
+    the new-game one and an untouched one from 2026-10-18 too.
+    - **Cause:** the mission manager keeps one completion bit per mission in 8 words, one per group (`mgr+0x90`,
+      `0x8d018`); group 8 is Reginald's five missions in Little Haiti (`_packMac\file002627.dat`, the mission
+      list: records 62 and 67-70, bits 0, 1, 5, 6, 7). The save writer's MMSK loop (`0x98699`-`0x986da`) stops at
+      the count of another list, the scripts' tutorial list (`scripts+0x3a8`, 7 entries, read by `0x33400`), so
+      the 8th word is never written and Reginald's missions read as not done after any load. The loader
+      (`0x977ac`) takes indices up to 7, so the file has room for it.
+    - **Fix:** `fix_mission_save.c`: the loop's test `cmp [eax+0x3a8],edi; jg` at `0x986d4` becomes
+      `cmp edi,8; jl`, so the writer writes all 8 words. A save made this way still loads in the original game.
+      `MISSION_REPLAY`'s SIDE list (`mr_key`) took groups up to 7 only; it now takes group 8 too, so Reginald's
+      finished missions can be replayed (their scripts start at a `0x8f`, as the other side missions do).
+    - **The save:** the user's `Gangstar2.sav` got an MMSK block with index 7 = `0xe3` and the collected bit on
+      all ten CCOL and all ten BCOL entries (each entry is `number << 4 | collected`; the loader keeps bit 0, in
+      order). The old file is `savegame\Gangstar2 - before edit 2026-11-06.sav`. All five Reginald scripts were
+      already idle in it, so nothing had to change there. Not given by the edit: the moment of the last pickup,
+      which is when the game shows "Surfboards collected" / "Wheels collected" (Sea-Ride and W3C-H unlocked); no
+      code that grants those at load was found. The achievements block (ACHI) was left as it was.
+    - **Test:** a probe run showed the loader taking the 8th word (word 8 = `e3` in memory) and the game's next
+      save dropping it without the fix; with the fix, that save kept it (71 of 71 missions done). mac-audit and
+      boot passed; the macaudit lists the one patched place under the preset, as for `STOPLOCK_FIX`.
 
 ## Diagnostics
 

@@ -1,4 +1,4 @@
-/* The host for a macOS i386 game; layout.h names the game.
+/* main.c -- the host for a macOS i386 game; layout.h names the game.
 
    Stage 1: load and verify.  The game image is mapped at its own addresses, the low range
    is copied and patched, every import is bound (to shims, or to stand-ins that report the

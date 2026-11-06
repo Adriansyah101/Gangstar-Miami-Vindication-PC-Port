@@ -1,12 +1,8 @@
 /* gl_bind.c -- CGL, and binding the game's GL imports to opengl32 */
-#include <math.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "compat.h"
-#include <xmmintrin.h>
-#include <GL/gl.h>
 #include <SDL3/SDL_video.h>
 
 #include "layout.h"

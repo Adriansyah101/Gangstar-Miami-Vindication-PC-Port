@@ -116,7 +116,7 @@ extern unsigned g_cap_clears, g_cap_draws, g_cap_run;
 enum { PM_START, PM_POST, PM_SSR, PM_VR, PM_AO, PM_BLOOM, PM_PRES, PM_END, PM_N };
 #define PM_RING 4
 typedef struct {
-    int on;                                              
+    int on;
     int started, slot;
     GLuint q[PM_RING][PM_N];
     unsigned set[PM_RING], sdraws[PM_RING], draws;
@@ -145,10 +145,10 @@ void pm_begin(void);
 struct gltrace {
     int clears, da_calls, de_calls;
     long da_verts, de_verts;
-    float cc[4];                                 
-    int vp[4];                                   
-    unsigned last_fb;                            
-    long max_buf;                                
+    float cc[4];
+    int vp[4];
+    unsigned last_fb;
+    long max_buf;
     int tex_binds;
 };
 extern struct gltrace g_glt;
@@ -162,8 +162,8 @@ extern unsigned g_tf_active, g_tf_client;
 extern uint8_t g_tf_tex2d, g_tf_tcarr;
 void(APIENTRY *tf_active_real(void))(GLenum);
 typedef struct {
-    GLint mode, crgb, calpha, src[6], op[6];             
-    GLfloat scale[2];                                    
+    GLint mode, crgb, calpha, src[6], op[6];
+    GLfloat scale[2];
 } g_te_t;
 extern g_te_t g_te[4];
 unsigned texfix_begin(GLenum mode);

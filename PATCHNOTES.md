@@ -10,12 +10,28 @@ fixes for running on a PC and the loading speed-ups, and turns everything else o
 own bugs included. [`FIXES.txt`](FIXES.txt) lists exactly what it changes, and [`CHANGELOG.md`](CHANGELOG.md)
 describes every part of the port in more detail.
 
-**Contents:** [PC fixes](#fixes-for-running-on-a-pc) • [Loading and speed](#loading-and-speed) •
+**Contents:** [V1.0.1](#v101) • [PC fixes](#fixes-for-running-on-a-pc) • [Loading and speed](#loading-and-speed) •
 [Original-game bugs](#bugs-in-the-original-game) • [High frame rates](#high-frame-rates) • [Graphics](#graphics) •
 [The world](#the-world) • [Gameplay](#gameplay) • [Controls](#controls) • [Menus and cutscenes](#menus-and-cutscenes) •
 [Music and add-ons](#music-and-add-ons) • [Display, sound and start-up](#display-sound-and-start-up) •
 [Log and privacy](#log-and-privacy) • [Builds](#builds) •
 [Since Windows Port v.1.0.0](#since-windows-port-v100)
+
+## V1.0.1
+
+Released 2026-11-06. The downloads now say `x86` in their names: the port runs on x86 processors only.
+
+- **Reginald's missions forgotten** (`MISSION_SAVE_FIX`): the original game keeps its mission flags in 8 groups, but
+  its save writes only 7, so Reginald's five missions read as not done after every load. The save now keeps all 8,
+  and the file still loads in the original game. Unlike the other fixes of the original game's bugs, this one stays on
+  under `ORIGINAL_MAC_EXPERIENCE`, so that a save made there keeps them and MISSION REPLAY still offers them once the
+  preset is off. MISSION REPLAY's SIDE list now includes Reginald's missions.
+- **Car reflections** (`VEHICLE_REFLECTIONS`): where nothing on screen lies along the reflection, as on roofs and
+  trunks seen from above, the screen itself is used as a sphere map, looked up by the reflected direction, so those
+  parts no longer look bare.
+- **Source:** the finished dev-only surveys and the `VBO_STREAM` experiment are gone, and unused includes were removed.
+  Nothing changes in play. Dev builds gained `TEST_SPAWN_CAR`, which puts the player at the wheel of a car of the
+  named type.
 
 ## V1.0.0
 

@@ -27,7 +27,7 @@
    arguments, and the same writes.  The float work is the original's, operation for operation, in SSE
    single precision (the file is built with fpmath=sse; max/min/sqrt by their SSE instructions).
 
-   Dev: GMV_BB_VERIFY=1 (build\bb_verify.bat) runs this copy, notes what it wrote, puts the old values
+   Dev: GMV_BB_VERIFY=1 in the environment (with GMV_PERF_PROFILE=1) runs this copy, notes what it wrote, puts the old values
    back and runs the original on the same frame, with its map and sinf calls (0x13223a, 0x1323eb)
    recorded; the buffers mapped, the angles and every value written are compared bit for bit.
    GMV_FAST_BILLBOARD=0 keeps the original. */

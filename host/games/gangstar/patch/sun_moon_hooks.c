@@ -1,9 +1,7 @@
 /* sun_moon_hooks.c -- SUN_MOON: the game side of the sun and moon */
 #include "compat.h"
-#include <float.h>
 #include <math.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
