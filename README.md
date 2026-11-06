@@ -149,6 +149,19 @@ of the game. None is included, and the game plays the same without them. The not
   <em>The Crusher add-on (<code>UC_CRUSHER</code>) on the beach in the port.</em>
 </p>
 
+The Crusher is not in the download. To see it in your game:
+
+1. Make `crusher.pak` from your own copy of Gameloft's **Urban Crime**. The scripts are in this repository's `tools`
+   folder; the note in the `add-on` folder lists them.
+2. Put it in the `add-on` folder, under exactly that name.
+3. Keep it on: **CRUSHER MONSTER TRUCK** under **OPTIONS**, **GAMEPATCH**, **FIXES** in the game, or `UC_CRUSHER`
+   in `savegame/GangstarMV.ini`. It is on by default.
+4. Finish the story mission **ON A LION HUNT**. From then on, whenever no mission is under way, the Crusher is
+   parked on the beach by L.C.'s hotel.
+
+Without `crusher.pak`, its setting on the GAMEPATCH tab is marked with `*`, the foot of the page says
+"* NEEDS ITS ADD ON FILE", and the game is unchanged.
+
 ### Updating, backing up and uninstalling
 
 - **Your progress** is in the `savegame` folder: `Gangstar2.sav` (the save), `Gangstar2.preferences` (the game's own
