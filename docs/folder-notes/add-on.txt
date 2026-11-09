@@ -8,8 +8,9 @@ Never share a .pak: it contains the game's files.
   crusher.pak   UC_CRUSHER: the Crusher monster truck of Urban Crime, parked on the beach by
                 LC's hotel after ON A LION HUNT. Made from your own copy of Urban Crime.
 
-  radio.pak     RADIO_SONGS: the nine radio songs of the iPhone version that the Mac does not
-                have. Made from your own copy of the iPhone version.
+  radio.pak     RADIO_SONGS: the radio songs the Mac does not have, nine of the iPhone version
+                and two rock songs of the Java version. Made from your own copies of the
+                iPhone version and of Gangstar: West Coast Hustle.
 
 To use one:
   1. Put the .pak in this folder, under exactly that name.

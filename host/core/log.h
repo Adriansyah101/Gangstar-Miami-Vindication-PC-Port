@@ -12,7 +12,7 @@
 #endif
 
 /* The port's version, the first line of its log. */
-#define GMV_VERSION "V1.0.1"
+#define GMV_VERSION "V1.0.2"
 
 /* Everything goes to cache\GangstarMV.log next to the exe, and in a dev build to the console too.  What
    is logged before log_open (or log_discard, LOG=0) is held and written when the file opens.  The user's

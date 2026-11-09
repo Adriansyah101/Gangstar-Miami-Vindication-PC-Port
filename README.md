@@ -80,7 +80,7 @@ game is included either.
 | Processor | x86 (Intel or AMD), 64-bit or 32-bit | 64-bit x86 (Intel or AMD) |
 | System | Windows 10 or 11. Tested on Windows 11; older versions have not been tried | 64-bit x86 with 32-bit support and glibc 2.35 or newer. Tested on Debian 13 (in WSL2) |
 | Libraries | Included (`SDL3.dll`) | 32-bit SDL 3.2 or newer, OpenGL, FreeType and fontconfig; `ffmpeg` for the intro (see below) |
-| Graphics | OpenGL 2.1 with framebuffer objects, for the anti-aliasing and the graphics options. Tested on an NVIDIA RTX 3050 Ti | the same |
+| Graphics | OpenGL 2.1 with framebuffer objects, for the anti-aliasing and the graphics options. Tested on an NVIDIA RTX 3050 Ti, and in scripted drives on AMD Radeon graphics built into the processor | the same |
 | Memory | The game used about 230 MB in the city with every option on, at 1920x1080 | the same |
 | Disk | About 800 MB for the game, 7 MB for the port | About 800 MB for the game, 2 MB for the port |
 
@@ -106,8 +106,8 @@ emulation, but the port has not been tried there.
 
    | System | File |
    |---|---|
-   | Windows | `GangstarMV-PC-Port-V1.0.1-Windows-x86.zip` |
-   | Linux | `GangstarMV-PC-Port-V1.0.1-Linux-x86.tar.gz` |
+   | Windows | `GangstarMV-PC-Port-V1.0.2-Windows-x86.zip` |
+   | Linux | `GangstarMV-PC-Port-V1.0.2-Linux-x86.tar.gz` |
 
    Each also comes as `-noicon`, with no game icon, and as `-dev`, for people working on the port.
 
@@ -211,7 +211,7 @@ to do. The graphics options weigh on the graphics card. On a slower PC, in this 
 1. Lower `DRAW_DISTANCE` and the three density options, to 1 (the Mac's) or 2.
 2. On integrated graphics, turn off `AMBIENT_OCCLUSION`, `WATER_REFLECTIONS`, `VEHICLE_REFLECTIONS` and
    `DYNAMIC_SHADOWS`, and set `BLOOM` to 1 or off.
-3. Set `MSAA` to 2 or 0 in `GangstarMV.ini`.
+3. Set `MSAA` to 2 or 0 in `GangstarMV.ini`. On integrated graphics, never above 4 (see Known Issues).
 4. Play at 30 fps, as on the Mac: `FRAME_MS=16.6667`.
 
 ## Troubleshooting
@@ -233,13 +233,17 @@ to do. The graphics options weigh on the graphics card. On a slower PC, in this 
 
 ## Known Issues
 
-1. **Only an NVIDIA GPU has been tested** (RTX 3050 Ti on Windows 11). Nothing has been run on AMD or Intel, and the
-   optional graphics use their own shaders, so those are the most likely to differ.
-2. **Linux has run in WSL2 only** (Debian 13, with Mesa's software renderer). It has not been tried on a Linux machine
+1. **Few GPUs tested:** an NVIDIA RTX 3050 Ti on Windows 11, played to the end, and the AMD Radeon graphics built into
+   a laptop's processor, in scripted drives only. Nothing has been run on Intel graphics or on an AMD graphics card.
+   The optional graphics use their own shaders, so those are the most likely to differ.
+2. **`MSAA=8` on integrated graphics:** with every graphics option on, the built-in AMD graphics sometimes took about
+   5 s for one frame. Windows then reset the GPU and the game stopped. Every such stop had `AMBIENT_OCCLUSION` on. Keep
+   `MSAA` at 4 (the default) there: that ran clean.
+3. **Linux has run in WSL2 only** (Debian 13, with Mesa's software renderer). It has not been tried on a Linux machine
    with a real GPU yet.
-3. **One crash not explained:** a fault was seen once while replaying MIAMI BOUND! after switching
+4. **One crash not explained:** a fault was seen once while replaying MIAMI BOUND! after switching
    `ORIGINAL_MAC_EXPERIENCE`. It did not come back in three more replays, and the cause is not proved.
-4. **Offline only.** Gameloft's services are long gone, so the game's online buttons report no connection.
+5. **Offline only.** Gameloft's services are long gone, so the game's online buttons report no connection.
 
 ### Reporting a bug
 
@@ -340,7 +344,7 @@ The source has no icon, because the icon is the game's art, so your program is b
 
 Help is welcome, and the most useful help right now needs no code at all:
 
-- **Play it on hardware that has not been tried:** an AMD or Intel GPU, Linux on a real GPU, the Steam Deck.
+- **Play it on hardware that has not been tried:** an Intel GPU, an AMD graphics card, Linux on a real GPU, the Steam Deck.
 
 Report what you find on the [Issues](https://github.com/Adriansyah101/Gangstar-Miami-Vindication-PC-Port/issues)
 page, with the log, even when everything works. For code, [`CONTRIBUTING.md`](CONTRIBUTING.md) explains how the

@@ -34,7 +34,7 @@ body:
     attributes:
       label: Port version
       description: Near the top of cache/GangstarMV.log, the line that ends with the version.
-      placeholder: "V1.0.1"
+      placeholder: "V1.0.2"
     validations:
       required: true
   - type: dropdown

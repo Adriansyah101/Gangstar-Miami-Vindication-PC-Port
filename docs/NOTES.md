@@ -268,6 +268,22 @@ and the FBO keeps its contents between presents as the Mac back buffer did. The 
 off, and 2 or 8 pick another count, capped at `GL_MAX_SAMPLES`. `[msaa]` lines log the count and
 screen size.
 
+**MSAA 8 on built-in graphics (2026-11-09).** The user's laptop runs the game on an AMD GPU built
+into the processor. With `MSAA=8` and all enhancements on, the game sometimes stopped. The log
+showed one frame of about 5 s. Then the driver dropped the game's GPU memory, and the game hung,
+or a NULL `glGetString` crashed `strstr`. That matches Windows resetting a GPU that took too long
+(TDR). VRAM was not full: the 8x screen with its depth and glow layer is about 200 MB. Eleven
+scripted drives (`zz-msaa-*` scenarios, deleted after the hunt) narrowed it down:
+- Hangs and crashes came only with ambient occlusion on, in 3 of 6 runs. The AO pass reads the
+  depth of every pixel many times, and at 8x each pixel has 8 samples.
+- AO off: 4 of 4 runs passed, but with the glow layer on, some screenshots were black except
+  for the glow, HUD included.
+- `MSAA=4` with everything on: 20 minutes clean, no black frame, longest frame 0.25 s.
+
+Nothing was changed in the code. This is neither an original nor a port bug: the chip is too slow
+for that much work a frame. The ini description, FIXES and README now say to keep 4 on built-in
+graphics. The preset is not affected (it uses 4).
+
 `ANISOTROPIC_FILTERING=N` (2-16) sharpens textures seen at a shallow angle, such as roads and walls
 in the distance. The engine already sets `GL_TEXTURE_MAX_ANISOTROPY_EXT` per texture to
 min(the texture's level, the GPU maximum) in its texture-state code (0x501010), and that stays the
@@ -954,7 +970,7 @@ One row per key, so that each change from the Mac game says why it is there. The
 | `SWITCH_SAVE_FIX` | original bug | 10-30 | A save made as Betty gave her things to Johnny. | off (the user's choice) | 23 |
 | `PLAYERSWITCH_INVENTORY` | enhancement | 10-30 | Betty shares Johnny's cash and weapons in free roam. | off | 24 |
 | `LC_SWITCH` | enhancement | 10-31 | Play as L.C. once the story is done. | off | 25 |
-| `RADIO_SONGS` | enhancement (iPhone songs, add-on from the user's own copy) | 11-03 | The Mac lacks nine of the iPhone's songs. | off; files read at the start, unused (the user's choice) | 26 |
+| `RADIO_SONGS` | enhancement (iPhone and Java songs, add-on from the user's own copies) | 11-03; 11-09 | The Mac lacks nine of the iPhone's songs; since 11-09 also two rock songs of the Java version. | off; files read at the start, unused (the user's choice) | 26 |
 | `DYNAMIC_SHADOWS` | enhancement | 11-03 | Shadows that follow the sun and the moon. | off: the game's fixed shadow | 27 |
 | `LOAD_BUDGET` | speed-up of the game's own wait | 11-03 | The game builds 1500 collision items a tick on the way to the main menu, hitching for 43-131 ms; `DRAW_DISTANCE` makes it heavier. | 200 since 11-05 (the game's 1500 before, by the user's choice): measured that day in the main menu at 30 fps, its scene changes stalled 116-219 ms with 1500 and 31-89 ms with 200; how long a stall lasts depends on the machine, not on the game | 29 |
 | `DPI_AWARE` | port fix (Windows only) | 11-04 | Windows display scaling above 100% blurred a window the system stretched. | on: no change to the game | the ini's description |
@@ -2059,6 +2075,15 @@ it, so hover is required; this is why hover highlights now light up. A **state-t
       gives way to the next, with the tuning noise. On restores the counts. `rs_tick` puts the key in
       force the first time the manager exists: the game sets its pointer only after the manager's
       constructor, which reads the stations, so a tick never sees half a list.
+    - **The Java version's rock songs (2026-11-09, the user's request):** two more rock songs,
+      `m_radio_rock_java_02.wav` and `m_radio_rock_java_03.wav`, which the user says the Java version's rock
+      station plays. The user took them from their own copy of Gangstar: West Coast Hustle. They were IMA ADPCM
+      too, but at 44.1 kHz with 2048-byte blocks and 4-6 dB louder than the Mac's rock songs (-16.2 and -18.2
+      LUFS). ffmpeg brought them to the Mac's format (32 kHz, 1024-byte blocks) and level (-21.9 and -22.0 LUFS,
+      peaks -12.3 and -10.4 dBFS); the originals stay outside the pack. They are the last two entries of the
+      list, so every earlier song keeps its id, and the rock station has 4 / 9 songs with the whole pack. Same
+      switch, same preset direction (off under `ORIGINAL_MAC_EXPERIENCE`). Like the rest, never shipped. First
+      run 2026-11-09: 11 of 11 songs found, rock 4 / 9, and the user tuned to ROCK TOUR and heard both songs.
 
 27. **Shadows from the sun and moon — enhancement at the user's request (2026-11-03), `DYNAMIC_SHADOWS=1`, off by
     default and under `ORIGINAL_MAC_EXPERIENCE`; GAMEPATCH GRAPHICS: DYNAMIC SHADOWS. Built in four steps (shiny cars,

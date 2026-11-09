@@ -11,7 +11,8 @@ the loader refuses any other.
 
 ## Status
 
-Version **V1.0.1** (2026-11-06). Tested on Windows 11 with an NVIDIA RTX 3050 Ti.
+Version **V1.0.2** (2026-11-09). Tested on Windows 11 with an NVIDIA RTX 3050 Ti, and in scripted drives on
+the AMD Radeon graphics built into the same laptop's processor.
 [`CHANGELOG.md`](../CHANGELOG.md) lists everything the port does, by part: the loader, the macOS wrapper and the game layer.
 
 | Area | State |
@@ -27,8 +28,10 @@ Version **V1.0.1** (2026-11-06). Tested on Windows 11 with an NVIDIA RTX 3050 Ti
 
 ### Not verified yet
 
-- **Other hardware:** nothing has been run on an AMD or Intel GPU. The enhancements use their own
-  shaders, so those are the most likely to differ.
+- **Other hardware:** nothing has been run on an Intel GPU, or on an AMD graphics card. AMD has been tried
+  only on the Radeon graphics built into a laptop's processor, in scripted drives (2026-11-09). With every
+  enhancement on, the screenshots looked right and the log had no fault, but keep `MSAA` at 4 there. The
+  enhancements use their own shaders, so they are the most likely to differ.
 - **Linux on a real GPU:** the Linux build has run in WSL2 only, with Mesa's software renderer.
 
 Confirmed on 2026-11-05: the game played to the end on V1.0.0, the engine sound, the unsmoothed glow of
@@ -103,13 +106,16 @@ the Mac.
 | Graphics | `ANISOTROPIC_FILTERING` (16) `AMBIENT_OCCLUSION` `BLOOM` (2, with `BLOOM_THRESHOLD` 0.5 and `BLOOM_WINDOWS` 2) `WATER_REFLECTIONS` `VEHICLE_REFLECTIONS` `DYNAMIC_SHADOWS` `SUN_MOON` (1, enhanced) `SPAWN_FADE` `FOG_MODE` (2, hybrid) | on | off |
 | Draw distance and crowds | `DRAW_DISTANCE` (2) `TRAFFIC_DENSITY` `PEDESTRIAN_DENSITY` `PARKED_CAR_DENSITY` (3 each) | as given | 1 |
 | Gameplay | `ALLOW_WEAPON_SPRINT` `MINIMAP_SHOPS` `MISSION_REPLAY` `PLAYERSWITCH_INVENTORY` `LC_SWITCH` | on | off |
-| Add-ons (each does nothing until its files are there) | `CUSTOM_RADIO` (your own music, at `CUSTOM_RADIO_VOLUME` 0.53) `UC_CRUSHER` (made from your own copy of Urban Crime) `RADIO_SONGS` (made from your own copy of the iPhone version) | on | off |
+| Add-ons (each does nothing until its files are there) | `CUSTOM_RADIO` (your own music, at `CUSTOM_RADIO_VOLUME` 0.53) `UC_CRUSHER` (made from your own copy of Urban Crime) `RADIO_SONGS` (made from your own copies of the iPhone version and of West Coast Hustle) | on | off |
 | Controls | `KEY_MOVE` `PAD_LAYOUT` `PAD_MENU` `PAD_HINTS` `PAD_ICONS` | on | off |
 | Mouse | `SHOW_CURSOR` | off | off |
 | Menus and cutscenes | `SHORT_WARNING` `CUTSCENE_KEYS` `TUTORIAL_KEYS` `HIDE_MORE_GAMES` `HIDE_GAMELOFT_LIVE` | on | off |
 | Intro movie | `NO_INTRO` | off (the intro plays) | off |
 
 [`FIXES.txt`](../FIXES.txt) explains most of these in plain words, and the ini describes every key.
+
+On graphics built into the processor, keep `MSAA` at 4. With 8 and every enhancement on, an AMD
+one stalled until Windows reset it, and the game stopped.
 
 ### How far each option has been tested
 

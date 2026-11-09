@@ -10,12 +10,23 @@ fixes for running on a PC and the loading speed-ups, and turns everything else o
 own bugs included. [`FIXES.txt`](FIXES.txt) lists exactly what it changes, and [`CHANGELOG.md`](CHANGELOG.md)
 describes every part of the port in more detail.
 
-**Contents:** [V1.0.1](#v101) • [PC fixes](#fixes-for-running-on-a-pc) • [Loading and speed](#loading-and-speed) •
+**Contents:** [V1.0.2](#v102) • [V1.0.1](#v101) • [PC fixes](#fixes-for-running-on-a-pc) • [Loading and speed](#loading-and-speed) •
 [Original-game bugs](#bugs-in-the-original-game) • [High frame rates](#high-frame-rates) • [Graphics](#graphics) •
 [The world](#the-world) • [Gameplay](#gameplay) • [Controls](#controls) • [Menus and cutscenes](#menus-and-cutscenes) •
 [Music and add-ons](#music-and-add-ons) • [Display, sound and start-up](#display-sound-and-start-up) •
 [Log and privacy](#log-and-privacy) • [Builds](#builds) •
 [Since Windows Port v.1.0.0](#since-windows-port-v100)
+
+## V1.0.2
+
+Released 2026-11-09.
+
+- **More rock songs** (`RADIO_SONGS`): the rock station also plays the Java version's two rock songs. They come from
+  your own copy of Gangstar: West Coast Hustle, brought to the Mac's format and loudness, in the same
+  `add-on/radio.pak` as the iPhone's songs. Either set may be missing from the pack. No song is included.
+- **Anti-aliasing on integrated graphics** (`MSAA`): keep it at 4 (the default) on graphics built into the processor.
+  On the built-in AMD graphics, 8 with every graphics option on sometimes kept the GPU busy for about 5 s on one
+  frame. Windows then reset it, and the game stopped. Only the setting's description and the docs changed.
 
 ## V1.0.1
 
@@ -174,12 +185,14 @@ These matter most above 60 ticks a second.
   wav, m4a, aac or wma). It follows the game's MUSIC volume, scaled by `CUSTOM_RADIO_VOLUME`, which also has a slider
   on the SOUND page, and the HUD shows the game's PLAY LIST / MY MUSIC logo for it.
 - `RADIO_SONGS`: the nine songs of the iPhone version that the Mac does not have, on the electro, hip-hop and rock
-  stations, raised to the Mac's loudness.
+  stations, raised to the Mac's loudness. Since V1.0.2, also the Java version's two rock songs, from Gangstar: West
+  Coast Hustle.
 - `UC_CRUSHER`: the Crusher monster truck of Urban Crime, parked on the beach by L.C.'s hotel after ON A LION HUNT. It is
   drivable, with its own engine sound and exhaust smoke.
 - The add-ons switch on and off in game with no restart.
 
-`RADIO_SONGS` and `UC_CRUSHER` are not included. They need an add-on you make from your own copy of that version.
+`RADIO_SONGS` and `UC_CRUSHER` are not included. They need an add-on you make from your own copy of the versions they
+come from.
 
 ### Display, sound and start-up
 

@@ -285,6 +285,8 @@ detail. The older record, by version, is in [`CHANGELOG_old.md`](CHANGELOG_old.m
   - The HUD shows the game's PLAY LIST / MY MUSIC logo for it.
 - **`RADIO_SONGS`.** The nine extra songs of the iPhone version on the electro, hip-hop and rock stations, raised to the
   Mac's loudness. They need `add-on\radio.pak`, made from your own copy of the iPhone version.
+  - Since 2026-11-09 the rock station also plays the Java version's two rock songs, from your own copy of Gangstar:
+    West Coast Hustle, brought to the Mac's format and loudness. Either set of songs may be missing from the pack.
 - **`UC_CRUSHER`.** Urban Crime's Crusher monster truck, parked by L.C.'s hotel after ON A LION HUNT. It is drivable,
   with its own engine sound and exhaust smoke. It needs `add-on\crusher.pak`, made from your own copy of Urban Crime.
 - **Live switching.** The add-ons switch on and off in game with no restart. No add-on or song is included.

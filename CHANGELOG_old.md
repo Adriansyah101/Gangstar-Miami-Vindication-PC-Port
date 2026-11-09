@@ -1,5 +1,17 @@
 # Changelog
 
+## PC Port V1.0.2 (2026-11-09)
+
+### Changed
+
+- **`RADIO_SONGS`:** the rock station also plays the Java version's two rock songs, made from your own copy of
+  Gangstar: West Coast Hustle and brought to the Mac's format and loudness. They come after the iPhone's songs in
+  the same `add-on\radio.pak`. Either set may be missing from the pack. Same switch, and still off under
+  `ORIGINAL_MAC_EXPERIENCE`. As before, no song is included.
+- **`MSAA`:** its description, `FIXES.txt` and the README now say to keep 4 on graphics built into the processor.
+  On an AMD one, 8 with every enhancement on sometimes kept the GPU busy for about 5 s on one frame. Windows then
+  reset the GPU and the game stopped. 4 ran clean. The code is unchanged.
+
 ## PC Port V1.0.1 (2026-11-06)
 
 ### Fixed

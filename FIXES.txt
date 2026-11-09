@@ -1,4 +1,4 @@
-GangstarMV PC Port V1.0.1 - what has been fixed and added (as of 2026-11-06)
+GangstarMV PC Port V1.0.2 - what has been fixed and added (as of 2026-11-09)
 ================================================================
 
 Every item below is a key in GangstarMV.ini. The fixes are on by default, and setting one to 0
@@ -78,6 +78,11 @@ STATIC_VBO    The game sends every model (the city, the cars) from main memory t
 MSAA          The Mac game ran with 4x anti-aliasing (it asks for it on every Mac but eight early
               Intel models); the port's window had none, so edges were jagged. MSAA=4 (the
               default) restores it; 0 turns it off, 2 or 8 pick another count.
+              On graphics built into the processor, keep 4. In tests on an AMD one (2026-11-09),
+              8 with every enhancement on stalled a frame for about 5 s until Windows reset the
+              GPU and the game stopped, in 3 of 6 runs with ambient occlusion on. 8 with glow
+              also gave black frames at times. 4 with everything on ran 20 minutes clean. Not
+              a fault of the game or the port: the chip is too slow for that much work a frame.
 
 Frame pacing  The game ran at the monitor's refresh rate (~150 ticks/s on a fast laptop panel)
 (FRAME_MS)    instead of the Mac's 60, which broke engine sound, box-climbing and more. It now
@@ -373,10 +378,11 @@ UC_CRUSHER=1           After ON A LION HUNT, the Crusher monster truck of Urban 
                        add-on\crusher.pak next to the exe, made from your own copy of Urban Crime.
                        Also on the GAMEPATCH tab (FIXES: CRUSHER MONSTER TRUCK), at once.
 
-RADIO_SONGS=1          The electro, hip-hop and rock stations also play the nine songs of the iPhone
-                       version that the Mac does not have. They are not included: they need
-                       add-on\radio.pak next to the exe, made from your own copy of the iPhone
-                       version. Also on the GAMEPATCH tab (FIXES: RESTORED RADIO SONGS), at once.
+RADIO_SONGS=1          The electro, hip-hop and rock stations also play the songs the Mac does not
+                       have: nine of the iPhone version, and two rock songs of the Java version.
+                       They are not included: they need add-on\radio.pak next to the exe, made
+                       from your own copies of the iPhone version and of Gangstar: West Coast
+                       Hustle. Also on the GAMEPATCH tab (FIXES: RESTORED RADIO SONGS), at once.
                        (notes item 26)
 
 

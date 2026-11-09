@@ -2,7 +2,8 @@
    folder.  Not on the Mac; off by default and off under ORIGINAL_MAC_EXPERIENCE.
 
    add-on\radio\ next to the exe holds the iPhone version's own wavs from the player's copy of the game, raised
-   by 3 dB to the Mac's level (tools\radio_gain.py; the same format as the Mac's songs).  The folder can instead
+   by 3 dB to the Mac's level (tools\radio_gain.py; the same format as the Mac's songs), and the Java version's
+   two rock songs (see rs_songs).  Any of them may be missing.  The folder can instead
    be packed into one masked file,
    add-on\radio.pak (tools\uc_crusher_pack.py, gmv_pak_unpack in ucveh.c), which wins when both are there.
    None of it is ever shipped with the port.
@@ -38,7 +39,9 @@
 #define RS_STATIONS  5
 
 /* In the iPhone's order within each station; the Mac has none of them.  The iPhone has its Jerk It for the
-   electro station in no list: it is here at the player's request. */
+   electro station in no list: it is here at the player's request.  The two java songs are the Java version's
+   rock songs, taken from the player's copy of Gangstar: West Coast Hustle and brought to the Mac's format and
+   level (32 kHz, 1024-byte blocks, about -22 LUFS); they came last (2026-11-09), so the ids before stay. */
 static const struct { const char *file; int station; } rs_songs[] = {
     { "m_radio_electro_stompbox.wav",   1 },
     { "m_radio_electro_jerkit.wav",     1 },
@@ -49,6 +52,8 @@ static const struct { const char *file; int station; } rs_songs[] = {
     { "m_radio_rock_policesign.wav",    4 },
     { "m_radio_rock_bigbadwolf.wav",    4 },
     { "m_radio_rock_notime.wav",        4 },
+    { "m_radio_rock_java_02.wav",       4 },
+    { "m_radio_rock_java_03.wav",       4 },
 };
 #define RS_NSONGS (int)(sizeof rs_songs / sizeof *rs_songs)
 
